@@ -1,0 +1,7 @@
+[project]
+name = "common-core-pacman-2584cb91-7254-4b71-933d-d974d899f407"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
