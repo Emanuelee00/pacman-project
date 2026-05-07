@@ -24,6 +24,7 @@ def ft_func(curr_pos, screen, x:int, y:int, Ts:int) -> None:
     if curr_pos & 2:
         pygame.draw.line(screen, "yellow", ((x * Ts) + Ts, y * Ts), ((x * Ts) + Ts, (y * Ts) + Ts), width=10)
         pygame.draw.line(screen, "black", ((x * Ts) + Ts, y * Ts), ((x * Ts) + Ts, (y * Ts) + Ts), width=5)
+    if curr_pos & 4:
         pygame.draw.line(screen, "yellow", (x * Ts, (y * Ts) + Ts), ((x * Ts) + Ts, (y * Ts) + Ts), width=10)
         pygame.draw.line(screen, "black", (x * Ts, (y * Ts) + Ts), ((x * Ts) + Ts, (y * Ts) + Ts), width=5)
     if curr_pos & 8:

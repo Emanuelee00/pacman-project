@@ -3,6 +3,8 @@ import os
 import pdb
 from pygame import surface
 from typing import Optional
+
+
 class Character(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
