@@ -106,6 +106,8 @@ class Pacman(Character):
     def __init__(self):
         super().__init__()
         self.frame_slower = 0
+        self.pos_x = 100
+        self.pos_y = 100
 
         self.animation = {
             "down" : self.load_anim("pacman-down"),
