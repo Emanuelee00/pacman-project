@@ -3,7 +3,7 @@ import os
 import pdb
 from pygame import surface
 from typing import Optional
-from settings import Tile, Directions, SPEED, FLOOR_SIZE
+from settings import Tile, Directions, SPEED, WALL_SIZE, FLOOR_SIZE, TOLERANCE
 
 
 class Character(pygame.sprite.Sprite):
@@ -11,7 +11,7 @@ class Character(pygame.sprite.Sprite):
         super().__init__()
         self.walk_anim = []
 
-    SIZE = (45, 45)
+    SIZE = (44, 44)
 
     def load_anim(self, folder: str, image_name: Optional[str] = None):
         base = os.path.dirname(__file__)
@@ -106,11 +106,6 @@ class Clyde(Ghost):
 class Pacman(Character):
     def __init__(self):
         super().__init__()
-        self.pos_x: int = 12
-        self.pos_y: int = 12
-        self.edges = {
-            ''
-        }
         self.direction: Directions = Directions.NONE
         self._next_direction: Directions = Directions.NONE
 
@@ -123,26 +118,38 @@ class Pacman(Character):
             }
         self.image = self.animation[Directions.RIGHT][0]
         self.radius = self.image.get_width() // 2
+        self.pos_x: int = WALL_SIZE + self.radius
+        self.pos_y: int = WALL_SIZE + self.radius
 
-    def _can_move(self, tile_map, x_positions, y_positions):
+    def _is_aligned(self, x_positions, y_positions):
         from maze_drawing import pixels_to_tile
-        edge_x, edge_y = self.pos_x, self.pos_y
-        if self.direction == Directions.LEFT:
-            edge_y = self.pos_y + self.radius
-        elif self.direction == Directions.RIGHT:
-            edge_x = self.pos_x + 2 * self.radius
-            edge_y = self.pos_y + self.radius
-        elif self.direction == Directions.UP:
-            edge_x = self.pos_x + self.radius
-        elif self.direction == Directions.DOWN:
-            edge_x = self.pos_x + self.radius
-            edge_y = self.pos_y + 2 * self.radius
+        # edge_x, edge_y = self.pos_x, self.pos_y
+        # if self.direction == Directions.LEFT:
+        #     edge_y = self.pos_y + self.radius
+        # elif self.direction == Directions.RIGHT:
+        #     edge_x = self.pos_x + 2 * self.radius
+        #     edge_y = self.pos_y + self.radius
+        # elif self.direction == Directions.UP:
+        #     edge_x = self.pos_x + self.radius
+        # elif self.direction == Directions.DOWN:
+        #     edge_x = self.pos_x + self.radius
+        #     edge_y = self.pos_y + 2 * self.radius
 
-        tx, ty = pixels_to_tile(edge_x , edge_y, x_positions, y_positions)
-        print(f"edge_x={edge_x}, edge_y={edge_y}")
-        print(f"tx={tx}, ty={ty}")
-        print(tile_map[ty][tx])
-        return tile_map[ty][tx] == Tile.FLOOR
+        tx, ty = pixels_to_tile(self.pos_x , self.pos_y, x_positions, y_positions)
+        tile_center_x = x_positions[tx] + FLOOR_SIZE // 2
+        tile_center_y = y_positions[ty] + FLOOR_SIZE // 2
+
+        return abs(self.pos_x - tile_center_x) < TOLERANCE and abs(self.pos_y - tile_center_y) < TOLERANCE
+
+    def _collide(self, tilemap, x_positions, y_positions):
+        from maze_drawing import pixels_to_tile
+        if self.direction is not None:
+            front_x = self.pos_x + self.direction[0] * self.radius
+            front_y = self.pos_y + self.direction[1] * self.radius
+
+        tx, ty = pixels_to_tile(self.pos_x , self.pos_y, x_positions, y_positions)
+
+        return tilemap[ty][tx]
 
     @property
     def next_direction(self):
@@ -162,8 +169,7 @@ class Pacman(Character):
     def update(self, tile_map, x_positions, y_positions):
 
         self.direction = self._next_direction
-        if self._can_move(tile_map, x_positions, y_positions):
-
+        if self._is_aligned(x_positions, y_positions) and not self._collide(tile_map, x_positions, y_positions):
 
             self.pos_x += self.direction.dx * SPEED
             self.pos_y += self.direction.dy * SPEED

@@ -4,6 +4,7 @@ from enum import IntEnum, Enum
 
 
 # Pacman settings
+TOLERANCE = 3
 SPEED = 3
 class Directions(tuple, Enum):
     """Enum for the 4 directions"""
