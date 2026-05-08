@@ -1,8 +1,7 @@
 import pygame
 import os
-import pdb
-from pygame import surface
 from typing import Optional
+from settings import Tile, Directions, SPEED, FLOOR_SIZE
 
 
 class Character(pygame.sprite.Sprite):
@@ -10,7 +9,7 @@ class Character(pygame.sprite.Sprite):
         super().__init__()
         self.walk_anim = []
 
-    SIZE = (50, 50)
+    SIZE = (45, 45)
 
     def load_anim(self, folder: str, image_name: Optional[str] = None):
         base = os.path.dirname(__file__)
@@ -105,27 +104,93 @@ class Clyde(Ghost):
 class Pacman(Character):
     def __init__(self):
         super().__init__()
+        self.pos_x: int = 12
+        self.pos_y: int = 12
+        self.edges = {
+            ''
+        }
+        self.direction: Directions = Directions.NONE
+        self._next_direction: Directions = Directions.NONE
+
         self.frame_slower = 0
-        self.pos_x = 100
-        self.pos_y = 100
-
         self.animation = {
-            "down" : self.load_anim("pacman-down"),
-            "left" : self.load_anim("pacman-left"),
-            "right" : self.load_anim("pacman-right"),
-            "up" : self.load_anim("pacman-up")
+            Directions.UP : self.load_anim("pacman-up"),
+            Directions.LEFT : self.load_anim("pacman-left"),
+            Directions.RIGHT : self.load_anim("pacman-right"),
+            Directions.DOWN : self.load_anim("pacman-down")
             }
-        print(self.animation)
-        self.image = self.animation["right"][0]  # già scalata da load_anim
+        self.image = self.animation[Directions.RIGHT][0]
+        self.radius = self.image.get_width() // 2
 
-    def update(self, direction: str):
-        if direction:
-            frame = self.animation[direction]
-            self.frame_slower += 0.05
+    def _lane_centers(self, positions):
+        return [position + FLOOR_SIZE // 2 for index, position in enumerate(positions) if index % 2 == 1]
 
+    def _is_aligned_for_turn(self, direction, x_positions, y_positions):
+        center_x = self.pos_x + self.radius
+        center_y = self.pos_y + self.radius
+        tolerance = SPEED
+
+        if direction in (Directions.LEFT, Directions.RIGHT):
+            lane_centers = self._lane_centers(y_positions)
+            return any(abs(center_y - lane_center) <= tolerance for lane_center in lane_centers)
+
+        if direction in (Directions.UP, Directions.DOWN):
+            lane_centers = self._lane_centers(x_positions)
+            return any(abs(center_x - lane_center) <= tolerance for lane_center in lane_centers)
+
+        return True
+
+    def _can_move(self, direction, tile_map, x_positions, y_positions):
+        from maze_drawing import pixels_to_tile
+        edge_x, edge_y = self.pos_x, self.pos_y
+        if direction == Directions.LEFT:
+            edge_y = self.pos_y + self.radius
+        elif direction == Directions.RIGHT:
+            edge_x = self.pos_x + 2 * self.radius
+            edge_y = self.pos_y + self.radius
+        elif direction == Directions.UP:
+            edge_x = self.pos_x + self.radius
+        elif direction == Directions.DOWN:
+            edge_x = self.pos_x + self.radius
+            edge_y = self.pos_y + 2 * self.radius
+
+        tx, ty = pixels_to_tile(edge_x , edge_y, x_positions, y_positions)
+        return tile_map[ty][tx] == Tile.FLOOR
+
+    @property
+    def next_direction(self):
+        return self._next_direction
+
+    @next_direction.setter
+    def next_direction(self, keys):
+        if keys[pygame.K_LEFT]:
+            self._next_direction = Directions.LEFT
+        if keys[pygame.K_RIGHT]:
+            self._next_direction = Directions.RIGHT
+        if keys[pygame.K_UP]:
+            self._next_direction = Directions.UP
+        if keys[pygame.K_DOWN]:
+            self._next_direction = Directions.DOWN
+
+    def update(self, tile_map, x_positions, y_positions):
+
+        if self._next_direction != Directions.NONE:
+            if self._next_direction == self.direction:
+                pass
+            elif self._is_aligned_for_turn(self._next_direction, x_positions, y_positions) and self._can_move(self._next_direction, tile_map, x_positions, y_positions):
+                self.direction = self._next_direction
+
+        if self.direction != Directions.NONE and self._can_move(self.direction, tile_map, x_positions, y_positions):
+            self.pos_x += self.direction.dx * SPEED
+            self.pos_y += self.direction.dy * SPEED
+
+        if self.direction != Directions.NONE:
+            frame = self.animation[self.direction]
+
+            self.frame_slower += 0.15
             if self.frame_slower >= len(frame):
                 self.frame_slower = 0
-            
+
             self.image = frame[int(self.frame_slower)]
 
 if __name__ == "__main__":
@@ -150,7 +215,7 @@ if __name__ == "__main__":
         screen.fill("black")  # prima pulisci
 
         blinky.update()
-        screen.blit(blinky.image, (50, 50)) 
+        screen.blit(blinky.image, (50, 50))
 
         pygame.display.flip()
         clock.tick(60)

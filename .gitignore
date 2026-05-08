@@ -1,2 +1,5 @@
 .venv
+venv/
+__pycache__/
+*.pyc
 mazegenerator-00001-py3-none-any.whl
