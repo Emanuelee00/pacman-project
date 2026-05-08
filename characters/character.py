@@ -1,5 +1,7 @@
 import pygame
 import os
+import pdb
+from pygame import surface
 from typing import Optional
 from settings import Tile, Directions, SPEED, FLOOR_SIZE
 
@@ -122,39 +124,24 @@ class Pacman(Character):
         self.image = self.animation[Directions.RIGHT][0]
         self.radius = self.image.get_width() // 2
 
-    def _lane_centers(self, positions):
-        return [position + FLOOR_SIZE // 2 for index, position in enumerate(positions) if index % 2 == 1]
-
-    def _is_aligned_for_turn(self, direction, x_positions, y_positions):
-        center_x = self.pos_x + self.radius
-        center_y = self.pos_y + self.radius
-        tolerance = SPEED
-
-        if direction in (Directions.LEFT, Directions.RIGHT):
-            lane_centers = self._lane_centers(y_positions)
-            return any(abs(center_y - lane_center) <= tolerance for lane_center in lane_centers)
-
-        if direction in (Directions.UP, Directions.DOWN):
-            lane_centers = self._lane_centers(x_positions)
-            return any(abs(center_x - lane_center) <= tolerance for lane_center in lane_centers)
-
-        return True
-
-    def _can_move(self, direction, tile_map, x_positions, y_positions):
+    def _can_move(self, tile_map, x_positions, y_positions):
         from maze_drawing import pixels_to_tile
         edge_x, edge_y = self.pos_x, self.pos_y
-        if direction == Directions.LEFT:
+        if self.direction == Directions.LEFT:
             edge_y = self.pos_y + self.radius
-        elif direction == Directions.RIGHT:
+        elif self.direction == Directions.RIGHT:
             edge_x = self.pos_x + 2 * self.radius
             edge_y = self.pos_y + self.radius
-        elif direction == Directions.UP:
+        elif self.direction == Directions.UP:
             edge_x = self.pos_x + self.radius
-        elif direction == Directions.DOWN:
+        elif self.direction == Directions.DOWN:
             edge_x = self.pos_x + self.radius
             edge_y = self.pos_y + 2 * self.radius
 
         tx, ty = pixels_to_tile(edge_x , edge_y, x_positions, y_positions)
+        print(f"edge_x={edge_x}, edge_y={edge_y}")
+        print(f"tx={tx}, ty={ty}")
+        print(tile_map[ty][tx])
         return tile_map[ty][tx] == Tile.FLOOR
 
     @property
@@ -174,13 +161,10 @@ class Pacman(Character):
 
     def update(self, tile_map, x_positions, y_positions):
 
-        if self._next_direction != Directions.NONE:
-            if self._next_direction == self.direction:
-                pass
-            elif self._is_aligned_for_turn(self._next_direction, x_positions, y_positions) and self._can_move(self._next_direction, tile_map, x_positions, y_positions):
-                self.direction = self._next_direction
+        self.direction = self._next_direction
+        if self._can_move(tile_map, x_positions, y_positions):
 
-        if self.direction != Directions.NONE and self._can_move(self.direction, tile_map, x_positions, y_positions):
+
             self.pos_x += self.direction.dx * SPEED
             self.pos_y += self.direction.dy * SPEED
 

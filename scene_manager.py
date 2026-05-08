@@ -1,5 +1,5 @@
 from menu_scene import MenuScene
-from pacman_movements import MainScene
+from maze_scene import MainScene
 
 while True:
     next_scene = MenuScene.run_scene_menu()
