@@ -1,0 +1,90 @@
+explique moi en frnacaiese quest que t a fait a partire de le pracour rougge jusqa  maintenatnt
+Voici ce qu'on a fait depuis le tracé rouge :
+
+1. Lignes rouges entre les cellules
+On a dessiné les centres de chaque cellule (points rouges) reliés par des lignes rouges — mais seulement là où il n'y a pas de mur entre deux cellules adjacentes. Ça représente le réseau de couloirs du labyrinthe.
+
+2. Mouvement sur la grille
+On a réécrit _can_move dans character.py pour que Pac-Man se déplace uniquement sur ces lignes :
+
+Il détecte quand il est au centre d'une cellule (at_center)
+À ce moment-là, il accepte la nouvelle direction si le passage est ouvert (bitmask du labyrinthe)
+Il aligne l'axe perpendiculaire au centre de la cellule (ex : en allant à droite, y reste exactement sur la ligne)
+3. Bugs corrigés
+
+WALL_SIZE non importé dans character.py → ajout de l'import
+at_center était toujours False car radius=22 (image 44px) mais pos_x=12 était calculé pour radius=25 → on recalcule pos_x/pos_y après avoir mesuré le vrai radius
+Tolérance <= SPEED causait une oscillation (Pac-Man revenait au centre chaque frame) → remis < SPEED
+Résultat attendu : Pac-Man se déplace uniquement le long des couloirs, centré sur les lignes rouges, et s'arrête aux murs. Depuis la cellule (0,0), seul le passage Sud est ouvert avec seed=42.
+
+explique ligne par ligne
+Read character.py (lines 145-184)
+Calcul de la taille et du centre
+
+
+cell = WALL_SIZE + FLOOR_SIZE          # taille d'une cellule en pixels (12+50=62)
+center_x = self.pos_x + self.radius   # centre de Pac-Man en x (pos = coin haut-gauche)
+center_y = self.pos_y + self.radius   # centre de Pac-Man en y
+Quelle cellule occupe Pac-Man ?
+
+
+cx = max(0, min((center_x - WALL_SIZE) // cell, len(maze[0]) - 1))
+cy = max(0, min((center_y - WALL_SIZE) // cell, len(maze) - 1))
+On divise la position du centre par la taille d'une cellule pour savoir dans quelle case (cx, cy) du labyrinthe se trouve Pac-Man. max/min évite de sortir des bords.
+
+Centre exact de cette cellule en pixels
+
+
+snap_x = cx * cell + WALL_SIZE + FLOOR_SIZE // 2
+snap_y = cy * cell + WALL_SIZE + FLOOR_SIZE // 2
+C'est le point précis au milieu de la cellule — c'est là où Pac-Man doit s'aligner.
+
+Correspondance direction → bit du bitmask
+
+
+dir_bit = {UP: 1, RIGHT: 2, DOWN: 4, LEFT: 8}
+Dans le labyrinthe, chaque cellule est un entier où chaque bit représente un mur. Ex: maze[0][0] = 1011 = murs Nord, Est, Ouest présents.
+
+Fonction : peut-on aller dans cette direction ?
+
+
+def can_go(d, gx, gy):
+    if d == Directions.NONE: return False             # pas de direction = non
+    if not (0 <= gy < len(maze) ...): return False    # hors des limites = non
+    return not (maze[gy][gx] & dir_bit[d])            # bit à 0 = passage ouvert = oui
+Est-on au centre de la cellule ?
+
+
+at_center = abs(center_x - snap_x) < SPEED and abs(center_y - snap_y) < SPEED
+Si Pac-Man est à moins de 3 pixels du centre, on considère qu'il y est.
+
+Décisions au centre
+
+
+if at_center:
+    self.pos_x = snap_x - self.radius   # on aligne parfaitement sur le centre
+    self.pos_y = snap_y - self.radius
+    if can_go(self._next_direction, cx, cy):   # si la nouvelle direction est libre
+        self.direction = self._next_direction  #   → on change de direction
+    elif not can_go(self.direction, cx, cy):   # si la direction actuelle est bloquée
+        self.direction = Directions.NONE       #   → on s'arrête
+Déplacement
+
+
+if self.direction in (LEFT, RIGHT):
+    self.pos_y = snap_y - self.radius  # verrouille y sur la ligne de la cellule
+    self.pos_x += self.direction.dx * SPEED  # avance en x
+elif self.direction in (UP, DOWN):
+    self.pos_x = snap_x - self.radius  # verrouille x sur la colonne de la cellule
+    self.pos_y += self.direction.dy * SPEED  # avance en y
+L'axe perpendiculaire est toujours aligné → Pac-Man ne sort jamais des lignes rouges.
+
+Animation
+
+
+if self.direction != Directions.NONE:
+    frame = self.animation[self.direction]  # liste d'images pour cette direction
+    self.frame_slower += 0.15              # avance le compteur d'animation
+    if self.frame_slower >= len(frame):
+        self.frame_slower = 0              # repart au début si on a tout joué
+    self.image = frame[int(self.frame_slower)]  # image courante à afficher

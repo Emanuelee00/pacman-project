@@ -3,7 +3,7 @@ import os
 import pdb
 from pygame import surface
 from typing import Optional
-from settings import Tile, Directions, SPEED, FLOOR_SIZE
+from settings import Tile, Directions, SPEED, FLOOR_SIZE, WALL_SIZE
 
 
 class Character(pygame.sprite.Sprite):
@@ -123,26 +123,8 @@ class Pacman(Character):
             }
         self.image = self.animation[Directions.RIGHT][0]
         self.radius = self.image.get_width() // 2
-
-    def _can_move(self, tile_map, x_positions, y_positions):
-        from maze_drawing import pixels_to_tile
-        edge_x, edge_y = self.pos_x, self.pos_y
-        if self.direction == Directions.LEFT:
-            edge_y = self.pos_y + self.radius
-        elif self.direction == Directions.RIGHT:
-            edge_x = self.pos_x + 2 * self.radius
-            edge_y = self.pos_y + self.radius
-        elif self.direction == Directions.UP:
-            edge_x = self.pos_x + self.radius
-        elif self.direction == Directions.DOWN:
-            edge_x = self.pos_x + self.radius
-            edge_y = self.pos_y + 2 * self.radius
-
-        tx, ty = pixels_to_tile(edge_x , edge_y, x_positions, y_positions)
-        print(f"edge_x={edge_x}, edge_y={edge_y}")
-        print(f"tx={tx}, ty={ty}")
-        print(tile_map[ty][tx])
-        return tile_map[ty][tx] == Tile.FLOOR
+        self.pos_x = WALL_SIZE + FLOOR_SIZE // 2 - self.radius
+        self.pos_y = WALL_SIZE + FLOOR_SIZE // 2 - self.radius
 
     @property
     def next_direction(self):
@@ -159,22 +141,44 @@ class Pacman(Character):
         if keys[pygame.K_DOWN]:
             self._next_direction = Directions.DOWN
 
-    def update(self, tile_map, x_positions, y_positions):
+    def update(self, maze, tile_map, x_positions, y_positions):
+        cell = WALL_SIZE + FLOOR_SIZE
+        center_x = self.pos_x + self.radius
+        center_y = self.pos_y + self.radius
 
-        self.direction = self._next_direction
-        if self._can_move(tile_map, x_positions, y_positions):
+        cx = max(0, min((center_x - WALL_SIZE) // cell, len(maze[0]) - 1))
+        cy = max(0, min((center_y - WALL_SIZE) // cell, len(maze) - 1))
+        snap_x = cx * cell + WALL_SIZE + FLOOR_SIZE // 2
+        snap_y = cy * cell + WALL_SIZE + FLOOR_SIZE // 2
 
+        dir_bit = {Directions.UP: 1, Directions.RIGHT: 2, Directions.DOWN: 4, Directions.LEFT: 8}
 
+        def can_go(d, gx, gy):
+            if d == Directions.NONE: return False
+            if not (0 <= gy < len(maze) and 0 <= gx < len(maze[gy])): return False
+            return not (maze[gy][gx] & dir_bit[d])
+
+        at_center = abs(center_x - snap_x) < SPEED and abs(center_y - snap_y) < SPEED
+        if at_center:
+            self.pos_x = snap_x - self.radius
+            self.pos_y = snap_y - self.radius
+            if can_go(self._next_direction, cx, cy):
+                self.direction = self._next_direction
+            elif not can_go(self.direction, cx, cy):
+                self.direction = Directions.NONE
+
+        if self.direction in (Directions.LEFT, Directions.RIGHT):
+            self.pos_y = snap_y - self.radius
             self.pos_x += self.direction.dx * SPEED
+        elif self.direction in (Directions.UP, Directions.DOWN):
+            self.pos_x = snap_x - self.radius
             self.pos_y += self.direction.dy * SPEED
 
         if self.direction != Directions.NONE:
             frame = self.animation[self.direction]
-
             self.frame_slower += 0.15
             if self.frame_slower >= len(frame):
                 self.frame_slower = 0
-
             self.image = frame[int(self.frame_slower)]
 
 if __name__ == "__main__":
