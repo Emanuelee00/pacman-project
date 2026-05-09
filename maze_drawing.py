@@ -169,6 +169,10 @@ def draw_maze(surface, tile_map, maze):
                 code = corner_code(tile_map, ty, tx)
                 CORNER_DRAWER.get(code, lambda s, x, y: None)(surface, x_start, y_start)
 
+            if tile_map[ty][tx] == Tile.FLOOR and maze[y][x] == 15:
+                print(maze[y][x])
+                pygame.draw.rect(surface, Color.CYAN, pygame.Rect((x_start, y_start), (FLOOR_SIZE, FLOOR_SIZE)), border_radius=7)
+
 if __name__ == "__main__":
     pygame.init()
 

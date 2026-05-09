@@ -17,10 +17,8 @@ class Pacman(Character):
             Directions.DOWN: self.load_anim("pacman/pacman-down"),
         }
         self.image = self.animation[Directions.RIGHT][0]
-        self.radius = self.image.get_width() // 2
 
         self.rect = self.image.get_rect()
-        self.rect.center = (18 + self.radius, 18 + self.radius)
 
     @property
     def center(self):

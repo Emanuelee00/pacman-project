@@ -10,8 +10,8 @@ class Ghost(Character):
         self.scared_anim = self.load_anim("ghosts/scared")
         self.scared = False
         self.frame_slower = 0
-        self.pos_x = 0
-        self.pos_y = 0
+        self.image = self.animation[0]
+        self.rect = self.image.get_rect()
 
     def update(self):
         if self.scared:

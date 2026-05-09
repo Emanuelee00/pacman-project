@@ -6,6 +6,7 @@ class Color:
     BLACK = (0, 0, 0)
     WHITE = (255, 255, 255)
     BLUE = (0, 0, 255)
+    CYAN = (43, 255, 255)
 
 
 # Pacman settings
@@ -35,7 +36,7 @@ class Tile(IntEnum):
     WALL = 1
     CORNER = 2
 
-WALL_SIZE = 12
+WALL_SIZE = 14
 FLOOR_SIZE = 50
 CELL_SIZE = WALL_SIZE + FLOOR_SIZE
 HEIGHT = 15
