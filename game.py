@@ -2,6 +2,7 @@ import pygame
 from settings import SCREEN_SIZE, HEIGHT, WIDTH, TILEMAP_HEIGHT, TILEMAP_WIDTH
 from mazegenerator.mazegenerator import MazeGenerator
 from maze_drawing import to_tile_map, draw_maze
+from characters.ghosts import Inky, Blinky, Pinky, Clyde
 from characters.pacman import Pacman
 from pacgum import Pacgum, PacgumManager
 
@@ -20,9 +21,11 @@ class Game:
         self.maze_surface = pygame.Surface((TILEMAP_WIDTH + 2, TILEMAP_HEIGHT + 2))
         draw_maze(self.maze_surface, tile_map, self.maze)
 
-        self.pacman = Pacman()
-        self.pacman.respawn(self.maze)
         self.pacgums_group = PacgumManager(maze_gen.maze).group
+        self.pacman = Pacman()
+        self.ghost = Blinky()
+        self.pacman.respawn(self.maze)
+        self.ghost.respawn(self.maze)
 
         self._running = True
         self._clock = pygame.time.Clock()
@@ -35,13 +38,15 @@ class Game:
 
             self.pacman.next_direction = pygame.key.get_pressed()
             self.pacman.update(self.maze)
+            self.ghost.update(self.maze)
 
             hits = pygame.sprite.spritecollide(self.pacman, self.pacgums_group, True)
 
             self._screen.fill((0, 0, 0))
             self._screen.blit(self.maze_surface, (0, 0))
-            self._screen.blit(self.pacman.image, self.pacman.rect)
             self.pacgums_group.draw(self._screen)
+            self._screen.blit(self.pacman.image, self.pacman.rect)
+            self._screen.blit(self.ghost.image, self.ghost.rect)
 
             pygame.display.flip()
             dt = self._clock.tick(60)

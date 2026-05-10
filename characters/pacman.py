@@ -5,7 +5,7 @@ from settings import Directions, CELL_SIZE, WALL_SIZE, FLOOR_SIZE, TOLERANCE, SP
 
 class Pacman(Character):
     def __init__(self, *groups: pygame.sprite.AbstractGroup):
-        super().__init__()
+        super().__init__(*groups)
         self._direction: Directions = Directions.NONE
         self._next_direction: Directions = Directions.NONE
 

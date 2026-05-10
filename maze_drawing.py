@@ -7,7 +7,7 @@ from characters.pacman import Pacman
 WS = WALL_SIZE
 
 def _draw_arc_twice(screen, cx, cy, radius, start_angle, end_angle, color):
-    for dr in range(2):
+    for dr in range(3):
         pygame.gfxdraw.arc(screen, cx, cy, radius - dr, start_angle, end_angle, color)
 
 CORNER_DRAWER = {
@@ -24,14 +24,14 @@ CORNER_DRAWER = {
         surface, x_start + WS // 2, y_start + WS, (WS // 2) - 1, 180, 360, Color.BLUE
         ),
     5: lambda surface, x_start, y_start: (
-        pygame.draw.line(surface, Color.BLUE, (x_start, y_start), (x_start, y_start + WS), width=2),
-        pygame.draw.line(surface, Color.BLUE, (x_start + WS, y_start), (x_start + WS, y_start + WS), width=2)
+        pygame.draw.line(surface, Color.BLUE, (x_start, y_start), (x_start, y_start + WS), width=3),
+        pygame.draw.line(surface, Color.BLUE, (x_start + WS, y_start), (x_start + WS, y_start + WS), width=3)
         ),
     6: lambda surface, x_start, y_start: _draw_arc_twice(
         surface, x_start + WS, y_start + WS, WS, 180, 270, Color.BLUE
         ),
     7: lambda surface, x_start, y_start: pygame.draw.line(
-        surface, Color.BLUE, (x_start, y_start), (x_start, y_start + WS), width=2
+        surface, Color.BLUE, (x_start, y_start), (x_start, y_start + WS), width=3
         ),
     8: lambda surface, x_start, y_start: _draw_arc_twice(
         surface, x_start, y_start + WS // 2, (WS // 2) - 1, 270, 450, Color.BLUE
@@ -40,20 +40,20 @@ CORNER_DRAWER = {
         surface, x_start, y_start, WS, 0, 90, Color.BLUE
         ),
     10: lambda surface, x_start, y_start: (
-        pygame.draw.line(surface, Color.BLUE, (x_start, y_start), (x_start + WS, y_start), width=2),
-        pygame.draw.line(surface, Color.BLUE, (x_start, y_start + WS), (x_start + WS, y_start + WS), width=2)
+        pygame.draw.line(surface, Color.BLUE, (x_start, y_start), (x_start + WS, y_start), width=3),
+        pygame.draw.line(surface, Color.BLUE, (x_start, y_start + WS), (x_start + WS, y_start + WS), width=3)
         ),
     11: lambda surface, x_start, y_start: pygame.draw.line(
-        surface, Color.BLUE, (x_start, y_start + WS), (x_start + WS, y_start + WS), width=2
+        surface, Color.BLUE, (x_start, y_start + WS), (x_start + WS, y_start + WS), width=3
         ),
     12: lambda surface, x_start, y_start: _draw_arc_twice(
         surface, x_start, y_start + WS, WS, 270, 360, Color.BLUE
         ),
     13: lambda surface, x_start, y_start: pygame.draw.line(
-        surface, Color.BLUE, (x_start + WS, y_start), (x_start + WS, y_start + WS), width=2
+        surface, Color.BLUE, (x_start + WS, y_start), (x_start + WS, y_start + WS), width=3
         ),
     14: lambda surface, x_start, y_start: pygame.draw.line(
-        surface, Color.BLUE, (x_start, y_start), (x_start + WS, y_start), width=2
+        surface, Color.BLUE, (x_start, y_start), (x_start + WS, y_start), width=3
         ),
 }
 
@@ -159,11 +159,11 @@ def draw_maze(surface, tile_map, maze):
 
             if tile_map[ty][tx] == Tile.WALL:
                 if ty % 2 == 0:
-                    pygame.draw.line(surface, Color.BLUE, (x_start, y_start), (x_start + FLOOR_SIZE, y_start), width=2)
-                    pygame.draw.line(surface, Color.BLUE, (x_start, y_start + WALL_SIZE), (x_start + FLOOR_SIZE, y_start + WALL_SIZE), width=2)
+                    pygame.draw.line(surface, Color.BLUE, (x_start, y_start), (x_start + FLOOR_SIZE, y_start), width=3)
+                    pygame.draw.line(surface, Color.BLUE, (x_start, y_start + WALL_SIZE), (x_start + FLOOR_SIZE, y_start + WALL_SIZE), width=3)
                 if tx % 2 == 0:
-                    pygame.draw.line(surface, Color.BLUE, (x_start, y_start), (x_start, y_start + FLOOR_SIZE), width=2)
-                    pygame.draw.line(surface, Color.BLUE, (x_start + WALL_SIZE, y_start), (x_start + WALL_SIZE, y_start + FLOOR_SIZE), width=2)
+                    pygame.draw.line(surface, Color.BLUE, (x_start, y_start), (x_start, y_start + FLOOR_SIZE), width=3)
+                    pygame.draw.line(surface, Color.BLUE, (x_start + WALL_SIZE, y_start), (x_start + WALL_SIZE, y_start + FLOOR_SIZE), width=3)
 
             if tile_map[ty][tx] == Tile.CORNER:
                 code = corner_code(tile_map, ty, tx)

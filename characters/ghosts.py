@@ -1,4 +1,8 @@
-from character import Character
+from .character import Character
+from settings import WALL_SIZE, FLOOR_SIZE, CELL_SIZE
+import math
+import random
+
 
 class Ghost(Character):
     def __init__(self, name: str):
@@ -13,7 +17,24 @@ class Ghost(Character):
         self.image = self.animation[0]
         self.rect = self.image.get_rect()
 
-    def update(self):
+    @property
+    def center(self):
+        return self.rect.center
+
+    def _distance_target(self, target_pos: tuple):
+        pos_x, pos_y = self.center
+        target_x, target_y = target_pos
+
+        return math.sqrt((target_x - pos_x) ** 2 + (target_y - pos_y) ** 2)
+
+    def _current_cell(self, maze):
+        center_x, center_y = self.center
+        cx = max(0, min((center_x - WALL_SIZE) // CELL_SIZE, len(maze[0]) - 1))
+        cy = max(0, min((center_y - WALL_SIZE) // CELL_SIZE, len(maze) - 1))
+        return cx, cy
+
+    def update(self, maze):
+        print(self._current_cell(maze))
         if self.scared:
             anim = self.scared_anim
             self.frame_slower += 0.05
@@ -24,17 +45,19 @@ class Ghost(Character):
             self.frame_slower = 0
         self.image = anim[int(self.frame_slower)]
 
-    def move(self, pacman_pos: tuple):
-        pass  # override in each subclass
+    def respawn(self):
+        return super().respawn()
 
 
 class Blinky(Ghost):
     def __init__(self):
         super().__init__("blinky")
 
-    def move(self, pacman_pos: tuple):
-        pass  # insegue direttamente pacman
+    def respawn(self, maze):
+        pos_x = WALL_SIZE + FLOOR_SIZE // 2
+        pos_y = WALL_SIZE + FLOOR_SIZE // 2
 
+        self.rect.center = (pos_x, pos_y)
 
 class Pinky(Ghost):
     def __init__(self):
