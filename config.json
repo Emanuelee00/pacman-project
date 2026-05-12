@@ -1,0 +1,25 @@
+{
+  "highscore_filename": "highscores.json",
+  "lives": 3,
+  "points_per_pacgum": 10,
+  "points_per_super_pacgum": 50,
+  "points_per_ghost": 200,
+  "seed": 42,
+  "level_max_time": 90,
+  "levels": [
+    {
+      "id": 1,
+      "width": 15,
+      "height": 15,
+      "pacgum_count": 42,
+      "super_pacgum_count": 4
+    },
+    {
+      "id": 2,
+      "width": 15,
+      "height": 15,
+      "pacgum_count": 50,
+      "super_pacgum_count": 4
+    }
+  ]
+}
