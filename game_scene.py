@@ -12,7 +12,7 @@ class Game:
     def __init__(self, config: GameConfig | None = None) -> None:
         pygame.init()
 
-        self.lives = 3
+        self.lives = 1
         self.points_per_pacgum = 10
         self.points_per_super_pacgum = 50
         self.points_per_ghost = 200
@@ -54,6 +54,7 @@ class Game:
         self._clock = pygame.time.Clock()
         self._start_time = pygame.time.get_ticks()
         self._cheat_time = None
+        self._game_over_time = None
 
     def _set_config(self, config: GameConfig):
         self.lives = config.lives
@@ -65,7 +66,7 @@ class Game:
         self.levels = None
         self.size = (config.levels[0].height, config.levels[0].width)
 
-    def _display_info(self):
+    def _display_info(self, milliseconds):
         font = pygame.font.SysFont("Arial", 18)
         screen_w = self._screen.get_width()
         screen_h = self._screen.get_height()
@@ -94,12 +95,27 @@ class Game:
             pygame.draw.circle(self._screen, (Color.YELLOW), (OFFSET_X + i * 30, icon_y), 10)
 
         # Cheat message: mostra per 3 secondi
-        if self._cheat_time and pygame.time.get_ticks() - self._cheat_time < 2000:
+        if self._cheat_time and pygame.time.get_ticks() - self._cheat_time < milliseconds:
             cheat_font = pygame.font.SysFont("Arial", 100)
             line1 = cheat_font.render("FOR THE", True, Color.YELLOW)
             line2 = cheat_font.render("FAMILY", True, Color.YELLOW)
             self._screen.blit(line1, (screen_w // 2 - line1.get_width() // 2, screen_h // 2 - line1.get_height()))
             self._screen.blit(line2, (screen_w // 2 - line2.get_width() // 2, screen_h // 2))
+        else:
+            self._cheat_time = None
+
+    def _display_game_over(self, milliseconds):
+        if self._game_over_time is None:
+            self._game_over_time = pygame.time.get_ticks()
+        elapsed = pygame.time.get_ticks() - self._game_over_time
+        if elapsed >= milliseconds:
+            self._running = False
+            return
+        font = pygame.font.SysFont("Arial", 60)
+        game_over = font.render("GAME OVER", True, Color.RED)
+        screen_w = self._screen.get_width()
+        screen_h = self._screen.get_height()
+        self._screen.blit(game_over, (screen_w // 2 - game_over.get_width() // 2, screen_h // 2))
 
     def run(self):
         while self._running:
@@ -126,6 +142,14 @@ class Game:
                     self.score += self.points_per_super_pacgum
                 else:
                     self.score += self.points_per_pacgum
+            
+            if pygame.sprite.collide_rect(self.pacman, self.ghost):
+                self.lives -= 1
+                if self.lives <= 0:
+                    self._display_game_over(2000)
+                else:
+                    self.pacman.respawn(self.maze)
+
             self.game_surface.fill((0, 0, 0))
             self.game_surface.blit(self.maze_surface, (0, 0))
             self.pacgums_group.draw(self.game_surface)
@@ -133,7 +157,9 @@ class Game:
             self.game_surface.blit(self.ghost.image, self.ghost.rect)
             self._screen.fill((0, 0, 0))
             self._screen.blit(self.game_surface, (OFFSET_X, OFFSET_Y))
-            self._display_info()
+            self._display_info(2000)
+            if self.lives <= 0:
+                self._display_game_over(2000)
 
             pygame.display.flip()
             dt = self._clock.tick(60)

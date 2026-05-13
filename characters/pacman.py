@@ -1,7 +1,7 @@
 import pygame
 from .character import Character
 from settings import Directions, CELL_SIZE, WALL_SIZE, FLOOR_SIZE, SPEED
-
+from pygame import Surface
 
 class Pacman(Character):
     def __init__(self, *groups: pygame.sprite.AbstractGroup):
@@ -17,7 +17,7 @@ class Pacman(Character):
             Directions.RIGHT: self.load_anim("pacman/pacman-right"),
             Directions.DOWN: self.load_anim("pacman/pacman-down"),
         }
-        self.image = self.animation[Directions.RIGHT][0]
+        self.image: Surface = self.animation[Directions.RIGHT][0]
         self.rect = self.image.get_rect()
 
     @property
