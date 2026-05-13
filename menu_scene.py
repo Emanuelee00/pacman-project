@@ -1,5 +1,5 @@
 import pygame
-from setting_manager import SettingManager
+from settings import SCREEN_SIZE
 
 
 dt = 0
@@ -8,7 +8,7 @@ class MenuScene():
     @staticmethod
     def run_scene_menu():
         pygame.init()
-        screen = pygame.display.set_mode(SettingManager.get_screen_size())
+        screen = pygame.display.set_mode(SCREEN_SIZE)
         clock = pygame.time.Clock()
         running = True
         while running:
