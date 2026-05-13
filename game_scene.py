@@ -51,6 +51,7 @@ class Game:
         self.ghost.respawn(self.maze)
 
         self._running = True
+        self._game_ended = False
         self._clock = pygame.time.Clock()
         self._start_time = pygame.time.get_ticks()
         self._cheat_time = None
@@ -109,6 +110,7 @@ class Game:
             self._game_over_time = pygame.time.get_ticks()
         elapsed = pygame.time.get_ticks() - self._game_over_time
         if elapsed >= milliseconds:
+            self._game_ended = True
             self._running = False
             return
         font = pygame.font.SysFont("Arial", 60)
@@ -145,9 +147,7 @@ class Game:
             
             if pygame.sprite.collide_rect(self.pacman, self.ghost):
                 self.lives -= 1
-                if self.lives <= 0:
-                    self._display_game_over(2000)
-                else:
+                if self.lives > 0:
                     self.pacman.respawn(self.maze)
 
             self.game_surface.fill((0, 0, 0))
@@ -163,6 +163,7 @@ class Game:
 
             pygame.display.flip()
             dt = self._clock.tick(60)
+        return self._game_ended
 
 
 if __name__ == "__main__":
