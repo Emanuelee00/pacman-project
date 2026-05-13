@@ -1,6 +1,7 @@
 import json
 from pydantic import BaseModel, Field
 from typing import List
+from pathlib import Path
 
 
 class LevelConfig(BaseModel):
@@ -52,6 +53,10 @@ def load_config(path: str = "config.json") -> GameConfig:
         FileNotFoundError: If the file does not exist.
         ValidationError: If the JSON data fails validation.
     """
+    if not path.endswith(".json"):
+        raise ValueError("File must in json format")
+    if Path(path).is_dir():
+         raise ValueError("You can't insert a directory")
     with open(path) as f:
         data = json.load(f)
     return GameConfig.model_validate(data)

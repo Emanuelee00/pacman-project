@@ -1,22 +1,30 @@
-from parser import load_config, load_highscores
 from menu_scene import MenuScene
-from maze_scene import MainScene
+from game_scene import Game
+import sys
+import pygame
+import parser
 
+pygame.init()
 
-def main():
-    """Entry point of the game.
+print(sys.argv[0])
+argc = len(sys.argv[:])
 
-    Loads config and highscores, then runs the game loop:
-    menu → game → menu → ...
-    """
-    config = load_config("config.json")
-    highscores = load_highscores(config.highscore_filename)
-
-    while True:
-        next_scene = MenuScene.run_scene_menu()
-        if next_scene:
-            MainScene.run_scene_main()
-
-
-if __name__ == "__main__":
-    main()
+if argc == 2:
+    try:
+            config = parser.load_config(sys.argv[1])
+            game = Game(config)
+    except(ValueError) as e:
+        print(e)
+    except(FileNotFoundError) as e:
+        print(str(e)[10:])
+else:
+    game = Game()
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+    next_scene = MenuScene.run_scene_menu()
+    if next_scene:
+        game.run()
+pygame.quit()
