@@ -7,6 +7,7 @@ from characters.pacman import Pacman
 from pacgum import Pacgum, PacgumManager
 from parser import GameConfig, load_highscores
 from pygame import Surface
+from name_input_scene import NameInputScene
 
 class Game:
     def __init__(self, config: GameConfig | None = None) -> None:
@@ -109,6 +110,7 @@ class Game:
             self._game_over_time = pygame.time.get_ticks()
         elapsed = pygame.time.get_ticks() - self._game_over_time
         if elapsed >= milliseconds:
+            NameInputScene(self._screen, self.score).run()
             self._running = False
             return
         font = pygame.font.SysFont("Arial", 60)
@@ -145,9 +147,7 @@ class Game:
             
             if pygame.sprite.collide_rect(self.pacman, self.ghost):
                 self.lives -= 1
-                if self.lives <= 0:
-                    self._display_game_over(2000)
-                else:
+                if self.lives > 0:
                     self.pacman.respawn(self.maze)
 
             self.game_surface.fill((0, 0, 0))
