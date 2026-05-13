@@ -1,7 +1,7 @@
 import pygame
 import os
 from typing import Optional
-from settings import Tile, Directions, SPEED, WALL_SIZE, FLOOR_SIZE, TOLERANCE, CELL_SIZE
+from settings import Tile, Directions, SPEED, WALL_SIZE, FLOOR_SIZE, TOLERANCE, CELL_SIZE, Color
 from pathlib import Path
 from abc import ABC, abstractmethod
 
@@ -20,11 +20,13 @@ class Character(pygame.sprite.Sprite, ABC):
             if image_name:
                 img = pygame.image.load(assets_dir / image_name)
                 img = pygame.transform.scale(img, self.SIZE)
+                img.set_colorkey((Color.BLACK))
                 self.walk_anim.append(img)
             else:
-                for file in assets_dir.iterdir():
+                for file in (assets_dir.iterdir()):
                     img = pygame.image.load(assets_dir / file)
                     img = pygame.transform.scale(img, self.SIZE)
+                    img.set_colorkey((Color.BLACK))
                     self.walk_anim.append(img)
         return self.walk_anim
 

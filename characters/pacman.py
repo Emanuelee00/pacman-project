@@ -1,6 +1,6 @@
 import pygame
 from .character import Character
-from settings import Directions, CELL_SIZE, WALL_SIZE, FLOOR_SIZE, TOLERANCE, SPEED
+from settings import Directions, CELL_SIZE, WALL_SIZE, FLOOR_SIZE, SPEED
 
 
 class Pacman(Character):
@@ -8,6 +8,7 @@ class Pacman(Character):
         super().__init__(*groups)
         self._direction: Directions = Directions.NONE
         self._next_direction: Directions = Directions.NONE
+        self.speed = SPEED
 
         self.frame_slower = 0
         self.animation = {
@@ -17,7 +18,6 @@ class Pacman(Character):
             Directions.DOWN: self.load_anim("pacman/pacman-down"),
         }
         self.image = self.animation[Directions.RIGHT][0]
-
         self.rect = self.image.get_rect()
 
     @property
@@ -60,8 +60,8 @@ class Pacman(Character):
         cx, cy = self._current_cell(maze)
         snap_x, snap_y = self._snap_to_cell(cx, cy)
         center_x, center_y = self.center
-        at_center = (abs(center_x - snap_x) < TOLERANCE
-                and abs(center_y - snap_y) < TOLERANCE)
+        at_center = (abs(center_x - snap_x) < self.speed
+                and abs(center_y - snap_y) < self.speed)
         if at_center:
             self.rect.center = (snap_x, snap_y)
             if self._can_move(self._next_direction, cx, cy, maze):
@@ -71,10 +71,10 @@ class Pacman(Character):
 
         if self._direction in (Directions.LEFT, Directions.RIGHT):
             self.rect.centery = snap_y
-            self.rect.x += self._direction.dx * SPEED
+            self.rect.x += self._direction.dx * self.speed
         elif self._direction in (Directions.UP, Directions.DOWN):
             self.rect.centerx = snap_x
-            self.rect.y += self._direction.dy * SPEED
+            self.rect.y += self._direction.dy * self.speed
 
         if self._direction != Directions.NONE:
             current_center = self.rect.center
@@ -101,3 +101,27 @@ class Pacman(Character):
                     pos_x = (center_maze_x + direction.dx) * CELL_SIZE + WALL_SIZE + FLOOR_SIZE // 2
                     pos_y = (center_maze_y + direction.dy)* CELL_SIZE + WALL_SIZE + FLOOR_SIZE // 2
                     self.rect.center = (pos_x + direction.dx, pos_y + direction.dy)
+
+    def set_normal(self):
+        self.SIZE = Character.SIZE
+        self.speed = SPEED
+        self.animation = {
+            Directions.UP: self.load_anim("pacman/pacman-up"),
+            Directions.LEFT: self.load_anim("pacman/pacman-left"),
+            Directions.RIGHT: self.load_anim("pacman/pacman-right"),
+            Directions.DOWN: self.load_anim("pacman/pacman-down"),
+        }
+        self.image = self.animation[Directions.RIGHT][0]
+        self.rect = self.image.get_rect(center=self.rect.center)
+
+    def set_cheated(self):
+        self.SIZE = (100, 100)
+        self.speed = 15
+        self.animation = {
+            Directions.UP: self.load_anim("pacman_car/pacman-up"),
+            Directions.LEFT: self.load_anim("pacman_car/pacman-left"),
+            Directions.RIGHT: self.load_anim("pacman_car/pacman-right"),
+            Directions.DOWN: self.load_anim("pacman_car/pacman-down"),
+        }
+        self.image = self.animation[Directions.RIGHT][0]
+        self.rect = self.image.get_rect(center=self.rect.center)

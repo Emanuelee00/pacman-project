@@ -2,11 +2,12 @@ import pygame
 from settings import CELL_SIZE, WALL_SIZE, FLOOR_SIZE, RADIUS, Color
 
 class Pacgum(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y, radius=RADIUS) -> None:
+    def __init__(self, pos_x, pos_y, radius=RADIUS, is_super=False) -> None:
         super().__init__()
         self.radius = radius
+        self.is_super = is_super
         self.image = pygame.Surface((self.radius * 2, self.radius * 2))
-        pygame.draw.circle(self.image, Color.WHITE, (self.radius, self.radius), self.radius)
+        pygame.draw.circle(self.image, Color.YELLOW, (self.radius, self.radius), self.radius)
         self.rect = self.image.get_rect()
         self.rect.center = (pos_x, pos_y)
 
@@ -30,4 +31,4 @@ class PacgumManager:
                 if maze[cy][cx] != 15:
                     pos_x = cx * CELL_SIZE + WALL_SIZE + FLOOR_SIZE // 2
                     pos_y = cy * CELL_SIZE + WALL_SIZE + FLOOR_SIZE // 2
-                    self.group.add(Pacgum(pos_x, pos_y)) if not is_corner(maze, cx, cy) else self.group.add(Pacgum(pos_x, pos_y, radius=RADIUS + 4))
+                    self.group.add(Pacgum(pos_x, pos_y)) if not is_corner(maze, cx, cy) else self.group.add(Pacgum(pos_x, pos_y, radius=RADIUS + 4, is_super=True))

@@ -1,5 +1,6 @@
 """This file contains all the settings for Pacman."""
 from enum import IntEnum, Enum
+import pygame
 
 # Colors
 class Color:
@@ -7,6 +8,7 @@ class Color:
     WHITE = (255, 255, 255)
     BLUE = (0, 0, 255)
     CYAN = (43, 255, 255)
+    YELLOW = (255, 255, 0)
 
 
 # Pacman settings
@@ -39,8 +41,8 @@ class Tile(IntEnum):
 WALL_SIZE = 14
 FLOOR_SIZE = 50
 CELL_SIZE = WALL_SIZE + FLOOR_SIZE
-HEIGHT = 15
-WIDTH = 20
+HEIGHT = 18
+WIDTH = 18
 MAZE_SIZE = HEIGHT * WIDTH
 TILEMAP_WIDTH = WALL_SIZE + (WALL_SIZE + FLOOR_SIZE) * WIDTH
 TILEMAP_HEIGHT = WALL_SIZE + (WALL_SIZE + FLOOR_SIZE) * HEIGHT
@@ -56,3 +58,7 @@ FPS = 60
 
 # Pacgum settings
 RADIUS = 3
+
+#cheating
+CHEAT_LIVES = [pygame.K_t, pygame.K_o, pygame.K_r, pygame.K_e, pygame.K_t, pygame.K_t, pygame.K_o]
+UNCHEAT = [pygame.K_f, pygame.K_a, pygame.K_l, pygame.K_s, pygame.K_e]
