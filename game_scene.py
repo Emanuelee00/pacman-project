@@ -45,10 +45,10 @@ class Game:
         self.game_surface = pygame.Surface((tilemap_w + 2, tilemap_h + 2))
 
         self.pacgums_group = PacgumManager(maze_gen.maze).group
-        self.pacman = Pacman()
-        self.ghost = Blinky()
-        self.pacman.respawn(self.maze)
-        self.ghost.respawn(self.maze)
+        self.pacman = Pacman(self.maze)
+        self.ghost = Blinky(self.maze, self.pacman)
+        self.pacman.respawn()
+        self.ghost.respawn()
 
         self._running = True
         self._game_ended = False
@@ -144,7 +144,7 @@ class Game:
                     self.score += self.points_per_super_pacgum
                 else:
                     self.score += self.points_per_pacgum
-            
+
             if pygame.sprite.collide_rect(self.pacman, self.ghost):
                 self.lives -= 1
                 if self.lives > 0:
