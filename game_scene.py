@@ -1,4 +1,7 @@
+import pathlib
+
 import pygame
+from maze_spritesheet import MazeSpritesheet
 from settings import HEIGHT, WIDTH, WALL_SIZE, CELL_SIZE, OFFSET_X, OFFSET_Y, CHEAT_LIVES, UNCHEAT, Color
 from mazegenerator.mazegenerator import MazeGenerator
 from maze_drawing import to_tile_map, draw_maze
@@ -41,7 +44,10 @@ class Game:
 
         tile_map = to_tile_map(maze_gen.maze)
         self.maze_surface = pygame.Surface((tilemap_w + 2, tilemap_h + 2))
-        draw_maze(self.maze_surface, tile_map, self.maze)
+        current_dir = pathlib.Path(__file__).parent
+        spritesheet_image = pygame.image.load(current_dir / "maze_tiles.png")
+        spritesheet = MazeSpritesheet(spritesheet_image)
+        draw_maze(self.maze_surface, tile_map, self.maze, spritesheet)
         self.game_surface = pygame.Surface((tilemap_w + 2, tilemap_h + 2))
 
         self.pacgums_group = PacgumManager(maze_gen.maze).group
@@ -135,8 +141,8 @@ class Game:
 
 
             self.pacman.next_direction = pygame.key.get_pressed()
-            self.pacman.update(self.maze)
-            self.ghost.update(self.maze)
+            self.pacman.update()
+            self.ghost.update()
 
             hits = pygame.sprite.spritecollide(self.pacman, self.pacgums_group, True)
             for hit in hits:
@@ -145,10 +151,10 @@ class Game:
                 else:
                     self.score += self.points_per_pacgum
 
-            if pygame.sprite.collide_rect(self.pacman, self.ghost):
-                self.lives -= 1
-                if self.lives > 0:
-                    self.pacman.respawn(self.maze)
+            # if pygame.sprite.collide_rect(self.pacman, self.ghost):
+            #     self.lives -= 1
+            #     if self.lives > 0:
+            #         self.pacman.respawn(self.maze)
 
             self.game_surface.fill((0, 0, 0))
             self.game_surface.blit(self.maze_surface, (0, 0))
@@ -156,6 +162,7 @@ class Game:
             self.game_surface.blit(self.pacman.image, self.pacman.rect)
             self.game_surface.blit(self.ghost.image, self.ghost.rect)
             self._screen.fill((0, 0, 0))
+
             self._screen.blit(self.game_surface, (OFFSET_X, OFFSET_Y))
             self._display_info(2000)
             if self.lives <= 0:

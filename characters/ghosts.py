@@ -1,4 +1,5 @@
 import math
+import sys
 
 from pygame import Rect, Surface
 
@@ -9,7 +10,7 @@ from .character import Character
 
 class Ghost(Character):
     GHOST_NAME: str | None = None
-    INITIAL_DIRECTION: Directions | None = None
+    INITIAL_DIRECTION: Directions = Directions.NONE
     SCARED_DIR: str = "ghosts/scared"
 
     def __init__(self, maze: list[list[int]], pacman: Character):
@@ -17,28 +18,28 @@ class Ghost(Character):
         self.scared_anim: list[Surface] = []
         self.scared = False
         self.pacman: Character = pacman
+        self.i = 0
         super().__init__(maze)
 
     def _load_image(self) -> tuple[Surface, Rect]:
         if self.GHOST_NAME:
             self.animation = {
                 Directions.UP: self._load_anim(
-                    f"{self.GHOST_NAME}/{self.GHOST_NAME}-up"
+                    f"{self.GHOST_NAME}/{self.GHOST_NAME.split('/')[-1]}-up"
                 ),
                 Directions.LEFT: self._load_anim(
-                    f"{self.GHOST_NAME}/{self.GHOST_NAME}-left"
+                    f"{self.GHOST_NAME}/{self.GHOST_NAME.split('/')[-1]}-left"
                 ),
                 Directions.DOWN: self._load_anim(
-                    f"{self.GHOST_NAME}/{self.GHOST_NAME}-down"
+                    f"{self.GHOST_NAME}/{self.GHOST_NAME.split('/')[-1]}-down"
                 ),
                 Directions.RIGHT: self._load_anim(
-                    f"{self.GHOST_NAME}/{self.GHOST_NAME}-right"
+                    f"{self.GHOST_NAME}/{self.GHOST_NAME.split('/')[-1]}-right"
                 ),
             }
         self.scared_anim = self._load_anim(self.SCARED_DIR)
 
-        if self.INITIAL_DIRECTION:
-            image = self.animation[self.INITIAL_DIRECTION][0]
+        image = self.animation[self.INITIAL_DIRECTION][0]
         return image, image.get_rect()
 
     def _distance_target(self, target_pos: tuple[int, int]):
@@ -64,18 +65,21 @@ class Ghost(Character):
 
 
 class Blinky(Ghost):
-    DIRECTION_DIR = "ghosts/blinky"
-    INITIAL_DIRECTION = Directions.LEFT
+    GHOST_NAME = "ghosts/blinky"
+    INITIAL_DIRECTION = Directions.DOWN
 
     def __init__(self, maze: list[list[int]], pacman: Character):
         super().__init__(maze, pacman)
 
     def update(self) -> None:
         available_dir = []
+        print(f"Available directions: {available_dir}")
         cx, cy = self._current_cell()
         center_x, center_y = self._to_pixels(cx, cy)
+        print(f"Current cell: ({cx}, {cy}), center: ({center_x}, {center_y}), rect center: {self.rect.center})")
         at_center = (abs(center_x - self.rect.centerx) < TOLERANCE
-                     and abs(center_y - self.rect.centery))
+                     and abs(center_y - self.rect.centery) < TOLERANCE)
+        print(f"At center: {at_center}")
 
         if at_center:
             self.rect.center = (center_x, center_y)
@@ -93,6 +97,7 @@ class Blinky(Ghost):
 
         min_dist = self._distance_target(self.pacman.rect.center)
 
+        print(available_dir)
         if available_dir:
             if len(available_dir) == 1:
                 self._direction = available_dir[0]
@@ -104,10 +109,11 @@ class Blinky(Ghost):
                         min_dist = new_dist
                         self._direction = d
 
+        print(self._direction)
         if self._direction in (Directions.LEFT, Directions.RIGHT):
-            self.rect.centerx += self._direction.dx * self.speed
+            self.rect.x += self._direction.dx * self.speed
         elif self._direction in (Directions.UP, Directions.DOWN):
-            self.rect.centery += self._direction.dy * self.speed
+            self.rect.y += self._direction.dy * self.speed
 
         if self._direction != Directions.NONE:
             current_center = self.rect.center
@@ -117,6 +123,9 @@ class Blinky(Ghost):
                 self.frame_slower = 0
             self.image = frame[int(self.frame_slower)]
             self.rect = self.image.get_rect(center=current_center)
+        self.i += 1
+        if self.i == 3:
+            sys.exit("Blinky is the only ghost implemented for now, other ghosts will be implemented in the next iterations")
 
     def respawn(self) -> None:
         pos_x = WALL_SIZE + FLOOR_SIZE // 2
@@ -126,7 +135,7 @@ class Blinky(Ghost):
 
 
 class Pinky(Ghost):
-    DIRECTION_DIR = "ghosts/pinky"
+    GHOST_NAME = "ghosts/pinky"
     INITIAL_DIRECTION = Directions.UP
 
     def __init__(self, maze: list[list[int]], pacman: Character):
@@ -137,7 +146,7 @@ class Pinky(Ghost):
 
 
 class Inky(Ghost):
-    DIRECTION_DIR = "ghosts/inky"
+    GHOST_NAME = "ghosts/inky"
     INITIAL_DIRECTION = Directions.RIGHT
 
     def __init__(self, maze: list[list[int]], pacman: Character):
@@ -148,7 +157,7 @@ class Inky(Ghost):
 
 
 class Clyde(Ghost):
-    DIRECTION_DIR = "ghosts/clyde"
+    GHOST_NAME = "ghosts/clyde"
     INITIAL_DIRECTION = Directions.DOWN
 
     def __init__(self, maze: list[list[int]], pacman: Character):
