@@ -11,6 +11,7 @@ from pygame import Surface, Rect
 
 
 class Pacman(Character):
+    INITIAL_DIRECTION = Directions.RIGHT
     SPRITES = {
         Directions.RIGHT: [(0, 54, 48, 48), (54, 54, 48, 48), (108, 54, 48, 48)],
         Directions.LEFT: [(162, 54, 48, 48), (216, 54, 48, 48), (270, 54, 48, 48)],
@@ -21,18 +22,10 @@ class Pacman(Character):
     def __init__(self, maze: list[list[int]], spritesheet: Spritesheet):
         self.animation: dict[Directions, list[Surface]] = {}
         self.spritesheet = spritesheet
-        super().__init__(maze)
+        super().__init__(maze, spritesheet)
 
         self._next_direction: Directions = Directions.NONE
         self._frame_slower = 0
-
-    def _load_image(self) -> tuple[Surface, Rect]:
-        for direction, coords in self.SPRITES.items():
-            self.animation[direction] = [
-                self.spritesheet.get_sprite(*rect) for rect in coords
-            ]
-        image = self.animation[Directions.RIGHT][0]
-        return image, image.get_rect()
 
     @property
     def next_direction(self):

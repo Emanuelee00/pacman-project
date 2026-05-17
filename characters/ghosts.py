@@ -18,33 +18,7 @@ class Ghost(Character):
         self.animation: dict[Directions, list[Surface]] = {}
         self.pacman: Character = pacman
         self.available_dir: list[Directions] = []
-        super().__init__(maze)
-
-    def _load_assets(self) -> tuple[Surface, Rect]:
-        if not hasattr(self, "spritesheet") or self.spritesheet is None:
-            raise RuntimeError("Spritesheet not set on Ghost before loading assets")
-
-        if not self.SPRITES:
-            raise RuntimeError(f"No SPRITES defined for {self.__class__.__name__}")
-
-        for direction, coords in self.SPRITES.items():
-            frames = []
-            for rect in coords:
-                sprite = self.spritesheet.get_sprite(*rect)
-                if sprite is None:
-                    raise RuntimeError(f"get_sprite returned None for {rect} in {self.__class__.__name__}")
-                frames.append(sprite)
-            self.animation[direction] = frames
-
-        if self.INITIAL_DIRECTION not in self.animation:
-            raise RuntimeError(f"INITIAL_DIRECTION {self.INITIAL_DIRECTION} has no frames for {self.__class__.__name__}")
-
-        image = self.animation[self.INITIAL_DIRECTION][0]
-        return image, image.get_rect()
-
-    def _load_image(self) -> tuple[Surface, Rect]:
-        """Compatibility wrapper for Character._load_image abstract method."""
-        return self._load_assets()
+        super().__init__(maze, spritesheet)
 
     def _distance_target(self, pos, target_pos: tuple[int, int]):
         pos_x, pos_y = pos

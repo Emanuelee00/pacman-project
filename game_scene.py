@@ -12,6 +12,7 @@ from pacgum import Pacgum, PacgumManager
 from parser import GameConfig, load_highscores
 from pygame import Surface
 
+
 class Game:
     def __init__(self, config: GameConfig | None = None) -> None:
         pygame.init()

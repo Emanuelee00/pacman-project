@@ -8,21 +8,31 @@ from settings import (
     CELL_SIZE,
 )
 from abc import ABC, abstractmethod
+from spritesheet import Spritesheet
 
 
 class Character(pygame.sprite.Sprite, ABC):
     SIZE = (40, 40)
+    SPRITES = {}
+    INITIAL_DIRECTION = Directions.NONE
 
-    def __init__(self, maze: list[list[int]]):
+    def __init__(self, maze: list[list[int]], spritesheet: Spritesheet):
         super().__init__()
         self.maze: list[list[int]] = maze
+        self.spritesheet = spritesheet
         self._direction: Directions = Directions.NONE
+        self.animation = {}
         self.image, self.rect = self._load_image()
         self.speed = SPEED
         self.frame_slower = 0
 
     def _load_image(self) -> tuple[Surface, Rect]:
-        pass
+        for direction, coords in self.SPRITES.items():
+            self.animation[direction] = [
+                self.spritesheet.get_sprite(*rect) for rect in coords
+            ]
+        image = self.animation[self.INITIAL_DIRECTION][0]
+        return image, image.get_rect()
 
     @abstractmethod
     def respawn(self) -> None:
