@@ -1,49 +1,53 @@
 import math
-import sys
-
 from pygame import Rect, Surface
-
 from settings import TOLERANCE, FLOOR_SIZE, WALL_SIZE, Directions
-
 from .character import Character
+from spritesheet import Spritesheet
 
 
 class Ghost(Character):
-    GHOST_NAME: str | None = None
     INITIAL_DIRECTION: Directions = Directions.NONE
-    SCARED_DIR: str = "ghosts/scared"
+    SPRITES: dict[Directions, list[tuple[int, int, int, int]]] = {}
 
-    def __init__(self, maze: list[list[int]], pacman: Character):
+    def __init__(
+            self, maze: list[list[int]],
+            pacman: Character,
+            spritesheet: Spritesheet
+            ):
+        self.spritesheet = spritesheet
         self.animation: dict[Directions, list[Surface]] = {}
-        self.scared_anim: list[Surface] = []
-        self.scared = False
         self.pacman: Character = pacman
-        self.i = 0
+        self.available_dir: list[Directions] = []
         super().__init__(maze)
 
-    def _load_image(self) -> tuple[Surface, Rect]:
-        if self.GHOST_NAME:
-            self.animation = {
-                Directions.UP: self._load_anim(
-                    f"{self.GHOST_NAME}/{self.GHOST_NAME.split('/')[-1]}-up"
-                ),
-                Directions.LEFT: self._load_anim(
-                    f"{self.GHOST_NAME}/{self.GHOST_NAME.split('/')[-1]}-left"
-                ),
-                Directions.DOWN: self._load_anim(
-                    f"{self.GHOST_NAME}/{self.GHOST_NAME.split('/')[-1]}-down"
-                ),
-                Directions.RIGHT: self._load_anim(
-                    f"{self.GHOST_NAME}/{self.GHOST_NAME.split('/')[-1]}-right"
-                ),
-            }
-        self.scared_anim = self._load_anim(self.SCARED_DIR)
+    def _load_assets(self) -> tuple[Surface, Rect]:
+        if not hasattr(self, "spritesheet") or self.spritesheet is None:
+            raise RuntimeError("Spritesheet not set on Ghost before loading assets")
+
+        if not self.SPRITES:
+            raise RuntimeError(f"No SPRITES defined for {self.__class__.__name__}")
+
+        for direction, coords in self.SPRITES.items():
+            frames = []
+            for rect in coords:
+                sprite = self.spritesheet.get_sprite(*rect)
+                if sprite is None:
+                    raise RuntimeError(f"get_sprite returned None for {rect} in {self.__class__.__name__}")
+                frames.append(sprite)
+            self.animation[direction] = frames
+
+        if self.INITIAL_DIRECTION not in self.animation:
+            raise RuntimeError(f"INITIAL_DIRECTION {self.INITIAL_DIRECTION} has no frames for {self.__class__.__name__}")
 
         image = self.animation[self.INITIAL_DIRECTION][0]
         return image, image.get_rect()
 
-    def _distance_target(self, target_pos: tuple[int, int]):
-        pos_x, pos_y = self.rect.center
+    def _load_image(self) -> tuple[Surface, Rect]:
+        """Compatibility wrapper for Character._load_image abstract method."""
+        return self._load_assets()
+
+    def _distance_target(self, pos, target_pos: tuple[int, int]):
+        pos_x, pos_y = pos
         target_x, target_y = target_pos
 
         return math.sqrt((target_x - pos_x) ** 2 + (target_y - pos_y) ** 2)
@@ -65,55 +69,67 @@ class Ghost(Character):
 
 
 class Blinky(Ghost):
-    GHOST_NAME = "ghosts/blinky"
     INITIAL_DIRECTION = Directions.DOWN
+    SPRITES = {
+        Directions.RIGHT: [(0, 0, 42, 42), (48, 0, 42, 42)],
+        Directions.LEFT: [(96, 0, 42, 42), (144, 0, 42, 42)],
+        Directions.UP: [(192, 0, 42, 42), (240, 0, 42, 42)],
+        Directions.DOWN: [(288, 0, 42, 42), (336, 0, 42, 42)],
+    }
 
-    def __init__(self, maze: list[list[int]], pacman: Character):
-        super().__init__(maze, pacman)
+    def __init__(
+            self,
+            maze: list[list[int]],
+            pacman: Character,
+            spritesheet: Spritesheet
+            ):
+        super().__init__(maze, pacman, spritesheet)
 
     def update(self) -> None:
-        available_dir = []
-        print(f"Available directions: {available_dir}")
         cx, cy = self._current_cell()
         center_x, center_y = self._to_pixels(cx, cy)
-        print(f"Current cell: ({cx}, {cy}), center: ({center_x}, {center_y}), rect center: {self.rect.center})")
         at_center = (abs(center_x - self.rect.centerx) < TOLERANCE
                      and abs(center_y - self.rect.centery) < TOLERANCE)
-        print(f"At center: {at_center}")
 
         if at_center:
             self.rect.center = (center_x, center_y)
             for d in Directions:
                 if self._can_move(d, cx, cy):
+                    print(f"Can move {d} from ({cx}, {cy})")
                     if (
                         self._direction != Directions.NONE
                         and d == self._opposite_direction(self._direction)
                     ):
                         continue
-                    available_dir.append(d)
+                    self.available_dir.append(d)
 
-        if not available_dir:
-            self._direction = self._opposite_direction(self._direction)
+            if not self.available_dir:
+                self._direction = self._opposite_direction(self._direction)
 
-        min_dist = self._distance_target(self.pacman.rect.center)
+            min_dist = self._distance_target(
+                self.rect.center,
+                self.pacman._current_cell()
+                )
 
-        print(available_dir)
-        if available_dir:
-            if len(available_dir) == 1:
-                self._direction = available_dir[0]
-            else:
-                for d in available_dir:
-                    nx, ny = self._to_pixels(cx + d.dx, cy + d.dy)
-                    new_dist = self._distance_target((nx, ny))
-                    if new_dist < min_dist:
-                        min_dist = new_dist
-                        self._direction = d
+            if self.available_dir:
+                if len(self.available_dir) == 1:
+                    self._direction = self.available_dir[0]
+                else:
+                    for d in self.available_dir:
+                        nx = cx + d.dx
+                        ny = cy + d.dy
+                        new_dist = self._distance_target(
+                            (nx, ny),
+                            self.pacman._current_cell()
+                            )
+                        if new_dist < min_dist:
+                            min_dist = new_dist
+                            self._direction = d
 
-        print(self._direction)
-        if self._direction in (Directions.LEFT, Directions.RIGHT):
-            self.rect.x += self._direction.dx * self.speed
-        elif self._direction in (Directions.UP, Directions.DOWN):
-            self.rect.y += self._direction.dy * self.speed
+        self.rect.x += self._direction.dx * self.speed
+        self.rect.y += self._direction.dy * self.speed
+
+        self.available_dir.clear()
 
         if self._direction != Directions.NONE:
             current_center = self.rect.center
@@ -123,9 +139,6 @@ class Blinky(Ghost):
                 self.frame_slower = 0
             self.image = frame[int(self.frame_slower)]
             self.rect = self.image.get_rect(center=current_center)
-        self.i += 1
-        if self.i == 3:
-            sys.exit("Blinky is the only ghost implemented for now, other ghosts will be implemented in the next iterations")
 
     def respawn(self) -> None:
         pos_x = WALL_SIZE + FLOOR_SIZE // 2
@@ -135,33 +148,30 @@ class Blinky(Ghost):
 
 
 class Pinky(Ghost):
-    GHOST_NAME = "ghosts/pinky"
     INITIAL_DIRECTION = Directions.UP
 
-    def __init__(self, maze: list[list[int]], pacman: Character):
-        super().__init__(maze, pacman)
+    def __init__(self, maze: list[list[int]], pacman: Character, spritesheet: Spritesheet):
+        super().__init__(maze, pacman, spritesheet)
 
     def move(self, pacman_pos: tuple, pacman_dir: str):
         pass  # anticipa di 4 tile
 
 
 class Inky(Ghost):
-    GHOST_NAME = "ghosts/inky"
     INITIAL_DIRECTION = Directions.RIGHT
 
-    def __init__(self, maze: list[list[int]], pacman: Character):
-        super().__init__(maze, pacman)
+    def __init__(self, maze: list[list[int]], pacman: Character, spritesheet: Spritesheet):
+        super().__init__(maze, pacman, spritesheet)
 
     def move(self, pacman_pos: tuple, blinky_pos: tuple):
         pass  # comportamento misto
 
 
 class Clyde(Ghost):
-    GHOST_NAME = "ghosts/clyde"
     INITIAL_DIRECTION = Directions.DOWN
 
-    def __init__(self, maze: list[list[int]], pacman: Character):
-        super().__init__(maze, pacman)
+    def __init__(self, maze: list[list[int]], pacman: Character, spritesheet: Spritesheet):
+        super().__init__(maze, pacman, spritesheet)
 
     def move(self, pacman_pos: tuple):
         pass  # random quando lontano, scappa quando vicino

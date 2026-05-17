@@ -6,8 +6,7 @@ class MazeSpritesheet:
         self.spritesheet = spritesheet
 
     def get_sprite(self, x, y, width, height):
-        sprite = self.spritesheet.subsurface(pygame.Rect(x, y, width, height))
-        return sprite
+        return self.spritesheet.subsurface(pygame.Rect(x, y, width, height))
 
 
 Tiles = {
@@ -29,21 +28,3 @@ Tiles = {
     16: (96, 24, 24, 48),
     17: (120, 24, 48, 24),
 }
-
-if __name__ == "__main__":
-    from pathlib import Path
-
-    pygame.init()
-    screen = pygame.display.set_mode((400, 400))
-    current_dir = Path(__file__).parent
-    spritesheet_image = pygame.image.load(current_dir / "maze_tiles11.png")
-    spritesheet = MazeSpritesheet(spritesheet_image)
-
-    screen.blit(spritesheet.get_sprite(*Tiles[17]), (0, 0))
-
-    pygame.display.flip()
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()

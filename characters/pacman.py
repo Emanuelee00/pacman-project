@@ -1,4 +1,6 @@
 import pygame
+
+from spritesheet import Spritesheet
 from .character import Character
 from settings import (
     Directions,
@@ -9,20 +11,26 @@ from pygame import Surface, Rect
 
 
 class Pacman(Character):
-    def __init__(self, maze: list[list[int]]):
+    SPRITES = {
+        Directions.RIGHT: [(0, 54, 48, 48), (54, 54, 48, 48), (108, 54, 48, 48)],
+        Directions.LEFT: [(162, 54, 48, 48), (216, 54, 48, 48), (270, 54, 48, 48)],
+        Directions.UP: [(0, 0, 48, 48), (54, 0, 48, 48), (108, 0, 48, 48)],
+        Directions.DOWN: [(162, 0, 48, 48), (216, 0, 48, 48), (270, 0, 48, 48)],
+    }
+
+    def __init__(self, maze: list[list[int]], spritesheet: Spritesheet):
         self.animation: dict[Directions, list[Surface]] = {}
+        self.spritesheet = spritesheet
         super().__init__(maze)
 
         self._next_direction: Directions = Directions.NONE
         self._frame_slower = 0
 
     def _load_image(self) -> tuple[Surface, Rect]:
-        self.animation: dict[Directions, list[Surface]] = {
-            Directions.UP: self._load_anim("pacman/pacman-up"),
-            Directions.LEFT: self._load_anim("pacman/pacman-left"),
-            Directions.RIGHT: self._load_anim("pacman/pacman-right"),
-            Directions.DOWN: self._load_anim("pacman/pacman-down"),
-        }
+        for direction, coords in self.SPRITES.items():
+            self.animation[direction] = [
+                self.spritesheet.get_sprite(*rect) for rect in coords
+            ]
         image = self.animation[Directions.RIGHT][0]
         return image, image.get_rect()
 
@@ -54,10 +62,8 @@ class Pacman(Character):
             elif not self._can_move(self._direction, cx, cy):
                 self._direction = Directions.NONE
 
-        if self._direction in (Directions.LEFT, Directions.RIGHT):
-            self.rect.x += self._direction.dx * self.speed
-        elif self._direction in (Directions.UP, Directions.DOWN):
-            self.rect.y += self._direction.dy * self.speed
+        self.rect.x += self._direction.dx * self.speed
+        self.rect.y += self._direction.dy * self.speed
 
         if self._direction != Directions.NONE:
             current_center = self.rect.center

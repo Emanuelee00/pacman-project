@@ -1,15 +1,12 @@
 import pygame
 from pygame import Surface, Rect
-from typing import Optional
 from settings import (
     Directions,
     SPEED,
     WALL_SIZE,
     FLOOR_SIZE,
     CELL_SIZE,
-    Color,
 )
-from pathlib import Path
 from abc import ABC, abstractmethod
 
 
@@ -24,34 +21,6 @@ class Character(pygame.sprite.Sprite, ABC):
         self.speed = SPEED
         self.frame_slower = 0
 
-    def _load_anim(
-        self, folder: str, image_name: Optional[str] = None
-    ) -> list[Surface]:
-        current_dir = Path(__file__).parent
-        assets_dir = current_dir.parent / "assets" / folder
-
-        if not assets_dir.exists():
-            raise SystemExit(f"Cannot find {assets_dir}")
-
-        walk_anim: list[Surface] = []
-
-        if image_name:
-            img = pygame.image.load(assets_dir / image_name)
-            img = pygame.transform.scale(img, self.SIZE)
-            img.set_colorkey((Color.BLACK))
-            walk_anim.append(img)
-        else:
-            for file in assets_dir.iterdir():
-                img = pygame.image.load(assets_dir / file)
-                img = pygame.transform.scale(img, self.SIZE)
-                img.set_colorkey((Color.BLACK))
-                walk_anim.append(img)
-        if not walk_anim:
-            raise SystemExit(f"Cannot find any assets in {assets_dir}")
-
-        return walk_anim
-
-    @abstractmethod
     def _load_image(self) -> tuple[Surface, Rect]:
         pass
 

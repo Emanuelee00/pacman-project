@@ -1,6 +1,7 @@
 import pathlib
 
 import pygame
+from spritesheet import Spritesheet
 from maze_spritesheet import MazeSpritesheet
 from settings import HEIGHT, WIDTH, WALL_SIZE, CELL_SIZE, OFFSET_X, OFFSET_Y, CHEAT_LIVES, UNCHEAT, Color
 from mazegenerator.mazegenerator import MazeGenerator
@@ -50,9 +51,11 @@ class Game:
         draw_maze(self.maze_surface, tile_map, self.maze, spritesheet)
         self.game_surface = pygame.Surface((tilemap_w + 2, tilemap_h + 2))
 
+        ghosts_spritesheet = Spritesheet(current_dir / "assets" / "ghosts_sprites.png")
+        pacman_spritesheet = Spritesheet(current_dir / "assets" / "pacman_sprites.png")
         self.pacgums_group = PacgumManager(maze_gen.maze).group
-        self.pacman = Pacman(self.maze)
-        self.ghost = Blinky(self.maze, self.pacman)
+        self.pacman = Pacman(self.maze, pacman_spritesheet)
+        self.ghost = Blinky(self.maze, self.pacman, ghosts_spritesheet)
         self.pacman.respawn()
         self.ghost.respawn()
 
