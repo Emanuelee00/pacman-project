@@ -1,60 +1,28 @@
 import pygame
-import pygame.gfxdraw
 from settings import Tile, HEIGHT, WIDTH, FLOOR_SIZE, WALL_SIZE, Color
 from mazegenerator.mazegenerator import MazeGenerator
 from characters.pacman import Pacman
+from spritesheet import Spritesheet
 
-WS = WALL_SIZE
 
-def _draw_arc_twice(screen, cx, cy, radius, start_angle, end_angle, color):
-    for dr in range(3):
-        pygame.gfxdraw.arc(screen, cx, cy, radius - dr, start_angle, end_angle, color)
-
-CORNER_DRAWER = {
-    1: lambda surface, x_start, y_start: _draw_arc_twice(
-        surface, x_start + WS // 2, y_start, (WS // 2) - 1, 0, 180, Color.BLUE
-        ),
-    2: lambda surface, x_start, y_start: _draw_arc_twice(
-        surface, x_start + WS, y_start + WS // 2, (WS // 2) - 1, 90, 270, Color.BLUE
-        ),
-    3: lambda surface, x_start, y_start: _draw_arc_twice(
-        surface, x_start + WS, y_start, WS, 90, 180, Color.BLUE
-        ),
-    4: lambda surface, x_start, y_start: _draw_arc_twice(
-        surface, x_start + WS // 2, y_start + WS, (WS // 2) - 1, 180, 360, Color.BLUE
-        ),
-    5: lambda surface, x_start, y_start: (
-        pygame.draw.line(surface, Color.BLUE, (x_start, y_start), (x_start, y_start + WS), width=3),
-        pygame.draw.line(surface, Color.BLUE, (x_start + WS, y_start), (x_start + WS, y_start + WS), width=3)
-        ),
-    6: lambda surface, x_start, y_start: _draw_arc_twice(
-        surface, x_start + WS, y_start + WS, WS, 180, 270, Color.BLUE
-        ),
-    7: lambda surface, x_start, y_start: pygame.draw.line(
-        surface, Color.BLUE, (x_start, y_start), (x_start, y_start + WS), width=3
-        ),
-    8: lambda surface, x_start, y_start: _draw_arc_twice(
-        surface, x_start, y_start + WS // 2, (WS // 2) - 1, 270, 450, Color.BLUE
-        ),
-    9: lambda surface, x_start, y_start: _draw_arc_twice(
-        surface, x_start, y_start, WS, 0, 90, Color.BLUE
-        ),
-    10: lambda surface, x_start, y_start: (
-        pygame.draw.line(surface, Color.BLUE, (x_start, y_start), (x_start + WS, y_start), width=3),
-        pygame.draw.line(surface, Color.BLUE, (x_start, y_start + WS), (x_start + WS, y_start + WS), width=3)
-        ),
-    11: lambda surface, x_start, y_start: pygame.draw.line(
-        surface, Color.BLUE, (x_start, y_start + WS), (x_start + WS, y_start + WS), width=3
-        ),
-    12: lambda surface, x_start, y_start: _draw_arc_twice(
-        surface, x_start, y_start + WS, WS, 270, 360, Color.BLUE
-        ),
-    13: lambda surface, x_start, y_start: pygame.draw.line(
-        surface, Color.BLUE, (x_start + WS, y_start), (x_start + WS, y_start + WS), width=3
-        ),
-    14: lambda surface, x_start, y_start: pygame.draw.line(
-        surface, Color.BLUE, (x_start, y_start), (x_start + WS, y_start), width=3
-        ),
+Tiles = {
+    1: (0, 0, 24, 24),
+    2: (24, 0, 24, 24),
+    3: (48, 0, 24, 24),
+    4: (72, 0, 24, 24),
+    5: (96, 0, 24, 24),
+    6: (120, 0, 24, 24),
+    7: (144, 0, 24, 24),
+    8: (168, 0, 24, 24),
+    9: (192, 0, 24, 24),
+    10: (216, 0, 24, 24),
+    11: (240, 0, 24, 24),
+    12: (0, 24, 24, 24),
+    13: (24, 24, 24, 24),
+    14: (48, 24, 24, 24),
+    15: (72, 24, 24, 24),
+    16: (96, 24, 24, 48),
+    17: (120, 24, 48, 24),
 }
 
 
@@ -73,7 +41,6 @@ def to_tile_map(maze) -> list:
             elif tx % 2 == 1 and ty % 2 == 0:
                 if ty == 0 or ty == 2 * len(maze):
                     row.append(Tile.WALL)
-                # Internal horizontal wall: check SOUTH wall of cell above.
                 elif 0 < y <= len(maze) and x < len(maze[y - 1]) and (maze[y - 1][x] & 4):
                     row.append(Tile.WALL)
                 else:
@@ -82,7 +49,6 @@ def to_tile_map(maze) -> list:
             elif tx % 2 == 0 and ty % 2 == 1:
                 if tx == 0 or tx == 2 * len(maze[0]):
                     row.append(Tile.WALL)
-                # Internal vertical wall: check EAST wall of cell on the left.
                 elif y < len(maze) and 0 < x <= len(maze[y]) and (maze[y][x - 1] & 2):
                     row.append(Tile.WALL)
                 else:
@@ -92,8 +58,8 @@ def to_tile_map(maze) -> list:
                 row.append(Tile.CORNER)
 
         tile_map.append(row)
-    print(tile_map[0])
     return tile_map
+
 
 def tiles_positions(maze):
     x_positions = []
@@ -111,20 +77,6 @@ def tiles_positions(maze):
         y += WALL_SIZE if ty % 2 == 0 else FLOOR_SIZE
     return x_positions, y_positions
 
-def pixels_to_tile(pos_x, pos_y, x_positions, y_positions):
-    tile_x = 0
-    for i in range(len(x_positions)):
-        if pos_x < x_positions[i]:
-            break
-        tile_x = i
-
-    tile_y = 0
-    for i in range(len(y_positions)):
-        if pos_y < y_positions[i]:
-            break
-        tile_y = i
-
-    return tile_x, tile_y
 
 def corner_code(tile_map, ty, tx):
     bits = (
@@ -145,7 +97,7 @@ def corner_code(tile_map, ty, tx):
     return code
 
 
-def draw_maze(surface, tile_map, maze):
+def draw_maze(surface, tile_map, maze, spritesheet):
     x_positions, y_positions = tiles_positions(maze)
 
     for ty in range(len(tile_map)):
@@ -159,51 +111,65 @@ def draw_maze(surface, tile_map, maze):
 
             if tile_map[ty][tx] == Tile.WALL:
                 if ty % 2 == 0:
-                    pygame.draw.line(surface, Color.BLUE, (x_start, y_start), (x_start + FLOOR_SIZE, y_start), width=3)
-                    pygame.draw.line(surface, Color.BLUE, (x_start, y_start + WALL_SIZE), (x_start + FLOOR_SIZE, y_start + WALL_SIZE), width=3)
+                    sprite = spritesheet.get_sprite(*Tiles[17])
                 if tx % 2 == 0:
-                    pygame.draw.line(surface, Color.BLUE, (x_start, y_start), (x_start, y_start + FLOOR_SIZE), width=3)
-                    pygame.draw.line(surface, Color.BLUE, (x_start + WALL_SIZE, y_start), (x_start + WALL_SIZE, y_start + FLOOR_SIZE), width=3)
+                    sprite = spritesheet.get_sprite(*Tiles[16])
+                surface.blit(sprite, (x_start, y_start))
 
             if tile_map[ty][tx] == Tile.CORNER:
                 code = corner_code(tile_map, ty, tx)
-                CORNER_DRAWER.get(code, lambda s, x, y: None)(surface, x_start, y_start)
+                if code == 0:
+                    continue
+                sprite = spritesheet.get_sprite(*Tiles[code])
+                surface.blit(sprite, (x_start, y_start))
 
             if tile_map[ty][tx] == Tile.FLOOR and maze[y][x] == 15:
-                print(maze[y][x])
-                pygame.draw.rect(surface, Color.CYAN, pygame.Rect((x_start, y_start), (FLOOR_SIZE, FLOOR_SIZE)), border_radius=7)
-
-if __name__ == "__main__":
-    pygame.init()
-
-    maze_w = WALL_SIZE + (WALL_SIZE + FLOOR_SIZE) * WIDTH
-    maze_h = WALL_SIZE + (WALL_SIZE + FLOOR_SIZE) * HEIGHT
-    maze_surface = pygame.Surface((maze_w + 1, maze_h + 1))
-
-    maze_gen = MazeGenerator(size=(HEIGHT, WIDTH))
-    maze_gen.generate(seed=42)
-    tile_map = to_tile_map(maze_gen.maze)
-    draw_maze(maze_surface, tile_map, maze_gen.maze)
-
-    screen = pygame.display.set_mode((maze_w, maze_h))
-    clock = pygame.time.Clock()
-    pacman = Pacman()
-
-    running = True
-    dt = 0
-
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-        screen.fill((0, 0, 0))
-        screen.blit(maze_surface, (0, 0))
-        screen.blit(pacman.image, pacman.rect.topleft)
-        pacman.next_direction = pygame.key.get_pressed()
-        pacman.update(maze_gen.maze)
-        pygame.display.flip()
-        dt = clock.tick(60)
+                pygame.draw.rect(
+                    surface,
+                    Color.CYAN,
+                    pygame.Rect(
+                        (x_start - 4, y_start - 4),
+                        (FLOOR_SIZE + 8, FLOOR_SIZE + 8)
+                        ),
+                    border_radius=5
+                    )
 
 
-    pygame.quit()
+# if __name__ == "__main__":
+#     pygame.init()
+
+#     maze_w = WALL_SIZE + (WALL_SIZE + FLOOR_SIZE) * WIDTH
+#     maze_h = WALL_SIZE + (WALL_SIZE + FLOOR_SIZE) * HEIGHT
+#     maze_surface = pygame.Surface((maze_w + 1, maze_h + 1))
+
+#     maze_gen = MazeGenerator(size=(HEIGHT, WIDTH))
+#     maze_gen.generate(seed=42)
+#     tile_map = to_tile_map(maze_gen.maze)
+
+#     current_dir = pathlib.Path(__file__).parent
+#     spritesheet_image = pygame.image.load(current_dir / "maze_tiles11.png")
+#     spritesheet = MazeSpritesheet(spritesheet_image)
+#     draw_maze(maze_surface, tile_map, maze_gen.maze, spritesheet)
+
+#     screen = pygame.display.set_mode((maze_w, maze_h))
+#     clock = pygame.time.Clock()
+#     pacman = Pacman(maze_gen.maze)
+
+#     print(corner_code(tile_map, 5, 4))
+#     running = True
+#     dt = 0
+
+#     while running:
+#         for event in pygame.event.get():
+#             if event.type == pygame.QUIT:
+#                 running = False
+
+#         screen.fill((0, 0, 0))
+#         screen.blit(maze_surface, (0, 0))
+#         screen.blit(pacman.image, pacman.rect.topleft)
+#         pacman.next_direction = pygame.key.get_pressed()
+#         pacman.update()
+#         pygame.display.flip()
+#         dt = clock.tick(60)
+
+#     pygame.quit()
