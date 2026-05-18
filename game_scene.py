@@ -58,11 +58,13 @@ class Game:
         self.blinky = Blinky(self.maze, self.pacman, ghosts_spritesheet)
         self.pinky = Pinky(self.maze, self.pacman, ghosts_spritesheet)
         self.inky = Inky(self.maze, self.pacman, self.blinky, ghosts_spritesheet)
+        self.clyde = Clyde(self.maze, self.pacman, ghosts_spritesheet)
 
         self.pacman.respawn()
         self.blinky.respawn()
         self.pinky.respawn()
         self.inky.respawn()
+        self.clyde.respawn()
 
         self._running = True
         self._game_ended = False
@@ -153,7 +155,7 @@ class Game:
             self.blinky.update()
             self.pinky.update()
             self.inky.update()
-
+            self.clyde.update()
             hits = pygame.sprite.spritecollide(self.pacman, self.pacgums_group, True)
             for hit in hits:
                 if hit.is_super:
@@ -173,6 +175,7 @@ class Game:
             self.game_surface.blit(self.blinky.image, self.blinky.rect)
             self.game_surface.blit(self.pinky.image, self.pinky.rect)
             self.game_surface.blit(self.inky.image, self.inky.rect)
+            self.game_surface.blit(self.clyde.image, self.clyde.rect)
             self._screen.fill((0, 0, 0))
 
             self._screen.blit(self.game_surface, (OFFSET_X, OFFSET_Y))

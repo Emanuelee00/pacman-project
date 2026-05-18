@@ -7,7 +7,7 @@ from settings import (
     TOLERANCE,
     SPEED,
 )
-from pygame import Surface, Rect
+from pygame import Surface
 
 
 class Pacman(Character):
@@ -26,6 +26,7 @@ class Pacman(Character):
 
         self._next_direction: Directions = Directions.NONE
         self._frame_slower = 0
+        self.speed = SPEED
 
     @property
     def direction(self):

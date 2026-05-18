@@ -38,9 +38,10 @@ class Directions(Enum):
 class Mode:
     """Enum for the ghosts behavior."""
 
-    CHASE = 0
-    SCATTER = 1
-    FRIGHTENED = 2
+    CHASE = "chase"
+    SCATTER = "scatter"
+    FRIGHTENED = "frightened"
+    EATEN = "eaten"
 
 
 # Maze settings
