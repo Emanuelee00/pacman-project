@@ -1,10 +1,29 @@
 import pygame
-import pygame.gfxdraw
 from settings import Tile, HEIGHT, WIDTH, FLOOR_SIZE, WALL_SIZE, Color
 from mazegenerator.mazegenerator import MazeGenerator
 from characters.pacman import Pacman
-from maze_spritesheet import MazeSpritesheet, Tiles
-import pathlib
+from spritesheet import Spritesheet
+
+
+Tiles = {
+    1: (0, 0, 24, 24),
+    2: (24, 0, 24, 24),
+    3: (48, 0, 24, 24),
+    4: (72, 0, 24, 24),
+    5: (96, 0, 24, 24),
+    6: (120, 0, 24, 24),
+    7: (144, 0, 24, 24),
+    8: (168, 0, 24, 24),
+    9: (192, 0, 24, 24),
+    10: (216, 0, 24, 24),
+    11: (240, 0, 24, 24),
+    12: (0, 24, 24, 24),
+    13: (24, 24, 24, 24),
+    14: (48, 24, 24, 24),
+    15: (72, 24, 24, 24),
+    16: (96, 24, 24, 48),
+    17: (120, 24, 48, 24),
+}
 
 
 def to_tile_map(maze) -> list:
@@ -105,44 +124,52 @@ def draw_maze(surface, tile_map, maze, spritesheet):
                 surface.blit(sprite, (x_start, y_start))
 
             if tile_map[ty][tx] == Tile.FLOOR and maze[y][x] == 15:
-                pygame.draw.rect(surface, Color.CYAN, pygame.Rect((x_start - 4, y_start - 4), (FLOOR_SIZE + 8, FLOOR_SIZE + 8)), border_radius=5)
+                pygame.draw.rect(
+                    surface,
+                    Color.CYAN,
+                    pygame.Rect(
+                        (x_start - 4, y_start - 4),
+                        (FLOOR_SIZE + 8, FLOOR_SIZE + 8)
+                        ),
+                    border_radius=5
+                    )
 
 
-if __name__ == "__main__":
-    pygame.init()
+# if __name__ == "__main__":
+#     pygame.init()
 
-    maze_w = WALL_SIZE + (WALL_SIZE + FLOOR_SIZE) * WIDTH
-    maze_h = WALL_SIZE + (WALL_SIZE + FLOOR_SIZE) * HEIGHT
-    maze_surface = pygame.Surface((maze_w + 1, maze_h + 1))
+#     maze_w = WALL_SIZE + (WALL_SIZE + FLOOR_SIZE) * WIDTH
+#     maze_h = WALL_SIZE + (WALL_SIZE + FLOOR_SIZE) * HEIGHT
+#     maze_surface = pygame.Surface((maze_w + 1, maze_h + 1))
 
-    maze_gen = MazeGenerator(size=(HEIGHT, WIDTH))
-    maze_gen.generate(seed=42)
-    tile_map = to_tile_map(maze_gen.maze)
+#     maze_gen = MazeGenerator(size=(HEIGHT, WIDTH))
+#     maze_gen.generate(seed=42)
+#     tile_map = to_tile_map(maze_gen.maze)
 
-    current_dir = pathlib.Path(__file__).parent
-    spritesheet_image = pygame.image.load(current_dir / "maze_tiles11.png")
-    spritesheet = MazeSpritesheet(spritesheet_image)
-    draw_maze(maze_surface, tile_map, maze_gen.maze, spritesheet)
+#     current_dir = pathlib.Path(__file__).parent
+#     spritesheet_image = pygame.image.load(current_dir / "maze_tiles11.png")
+#     spritesheet = MazeSpritesheet(spritesheet_image)
+#     draw_maze(maze_surface, tile_map, maze_gen.maze, spritesheet)
 
-    screen = pygame.display.set_mode((maze_w, maze_h))
-    clock = pygame.time.Clock()
-    pacman = Pacman(maze_gen.maze)
+#     screen = pygame.display.set_mode((maze_w, maze_h))
+#     clock = pygame.time.Clock()
+#     pacman = Pacman(maze_gen.maze)
 
-    print(corner_code(tile_map, 5, 4))
-    running = True
-    dt = 0
+#     print(corner_code(tile_map, 5, 4))
+#     running = True
+#     dt = 0
 
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
+#     while running:
+#         for event in pygame.event.get():
+#             if event.type == pygame.QUIT:
+#                 running = False
 
-        screen.fill((0, 0, 0))
-        screen.blit(maze_surface, (0, 0))
-        screen.blit(pacman.image, pacman.rect.topleft)
-        pacman.next_direction = pygame.key.get_pressed()
-        pacman.update()
-        pygame.display.flip()
-        dt = clock.tick(60)
+#         screen.fill((0, 0, 0))
+#         screen.blit(maze_surface, (0, 0))
+#         screen.blit(pacman.image, pacman.rect.topleft)
+#         pacman.next_direction = pygame.key.get_pressed()
+#         pacman.update()
+#         pygame.display.flip()
+#         dt = clock.tick(60)
 
-    pygame.quit()
+#     pygame.quit()

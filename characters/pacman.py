@@ -28,6 +28,10 @@ class Pacman(Character):
         self._frame_slower = 0
 
     @property
+    def direction(self):
+        return self._direction
+
+    @property
     def next_direction(self):
         return self._next_direction
 
@@ -48,8 +52,9 @@ class Pacman(Character):
         at_center = (abs(center_x - self.rect.centerx) < TOLERANCE
                      and abs(center_y - self.rect.centery) < TOLERANCE)
 
-        if at_center:
-            self.rect.center = (center_x, center_y)
+        if (at_center or
+           self._next_direction == self._opposite_direction(self._direction)):
+            # self.rect.center = (center_x, center_y)
             if self._can_move(self._next_direction, cx, cy):
                 self._direction = self._next_direction
             elif not self._can_move(self._direction, cx, cy):

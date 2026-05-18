@@ -2,6 +2,7 @@
 from enum import IntEnum, Enum
 import pygame
 
+
 # Colors
 class Color:
     BLACK = (0, 0, 0)
@@ -12,9 +13,11 @@ class Color:
     RED = (255, 0, 0)
 
 
-# Pacman settings
+# Game settings
 TOLERANCE = 3
 SPEED = 4
+
+
 class Directions(Enum):
     """Enum for the possible movement directions of characters."""
 
@@ -30,6 +33,15 @@ class Directions(Enum):
     def dy(self): return self.value[1]
     @property
     def bit(self): return self.value[2]
+
+
+class Mode:
+    """Enum for the ghosts behavior."""
+
+    CHASE = 0
+    SCATTER = 1
+    FRIGHTENED = 2
+
 
 # Maze settings
 class Tile(IntEnum):

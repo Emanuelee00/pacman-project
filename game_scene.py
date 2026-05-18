@@ -2,7 +2,6 @@ import pathlib
 
 import pygame
 from spritesheet import Spritesheet
-from maze_spritesheet import MazeSpritesheet
 from settings import HEIGHT, WIDTH, WALL_SIZE, CELL_SIZE, OFFSET_X, OFFSET_Y, CHEAT_LIVES, UNCHEAT, Color
 from mazegenerator.mazegenerator import MazeGenerator
 from maze_drawing import to_tile_map, draw_maze
@@ -21,7 +20,7 @@ class Game:
         self.points_per_pacgum = 10
         self.points_per_super_pacgum = 50
         self.points_per_ghost = 200
-        self.seed = 42
+        self.seed = 43
         self.level_max_time = None
         self.levels = None
         self.size = (HEIGHT, WIDTH)
@@ -47,8 +46,8 @@ class Game:
         tile_map = to_tile_map(maze_gen.maze)
         self.maze_surface = pygame.Surface((tilemap_w + 2, tilemap_h + 2))
         current_dir = pathlib.Path(__file__).parent
-        spritesheet_image = pygame.image.load(current_dir / "maze_tiles.png")
-        spritesheet = MazeSpritesheet(spritesheet_image)
+        spritesheet = Spritesheet(current_dir / "maze_tiles.png")
+
         draw_maze(self.maze_surface, tile_map, self.maze, spritesheet)
         self.game_surface = pygame.Surface((tilemap_w + 2, tilemap_h + 2))
 
@@ -56,9 +55,14 @@ class Game:
         pacman_spritesheet = Spritesheet(current_dir / "assets" / "pacman_sprites.png")
         self.pacgums_group = PacgumManager(maze_gen.maze).group
         self.pacman = Pacman(self.maze, pacman_spritesheet)
-        self.ghost = Blinky(self.maze, self.pacman, ghosts_spritesheet)
+        self.blinky = Blinky(self.maze, self.pacman, ghosts_spritesheet)
+        self.pinky = Pinky(self.maze, self.pacman, ghosts_spritesheet)
+        self.inky = Inky(self.maze, self.pacman, self.blinky, ghosts_spritesheet)
+
         self.pacman.respawn()
-        self.ghost.respawn()
+        self.blinky.respawn()
+        self.pinky.respawn()
+        self.inky.respawn()
 
         self._running = True
         self._game_ended = False
@@ -146,7 +150,9 @@ class Game:
 
             self.pacman.next_direction = pygame.key.get_pressed()
             self.pacman.update()
-            self.ghost.update()
+            self.blinky.update()
+            self.pinky.update()
+            self.inky.update()
 
             hits = pygame.sprite.spritecollide(self.pacman, self.pacgums_group, True)
             for hit in hits:
@@ -155,16 +161,18 @@ class Game:
                 else:
                     self.score += self.points_per_pacgum
 
-            # if pygame.sprite.collide_rect(self.pacman, self.ghost):
-            #     self.lives -= 1
-            #     if self.lives > 0:
-            #         self.pacman.respawn(self.maze)
+            if pygame.sprite.collide_rect(self.pacman, self.blinky):
+                self.lives -= 1
+                if self.lives > 0:
+                    self.pacman.respawn()
 
             self.game_surface.fill((0, 0, 0))
             self.game_surface.blit(self.maze_surface, (0, 0))
             self.pacgums_group.draw(self.game_surface)
             self.game_surface.blit(self.pacman.image, self.pacman.rect)
-            self.game_surface.blit(self.ghost.image, self.ghost.rect)
+            self.game_surface.blit(self.blinky.image, self.blinky.rect)
+            self.game_surface.blit(self.pinky.image, self.pinky.rect)
+            self.game_surface.blit(self.inky.image, self.inky.rect)
             self._screen.fill((0, 0, 0))
 
             self._screen.blit(self.game_surface, (OFFSET_X, OFFSET_Y))
@@ -173,7 +181,7 @@ class Game:
                 self._display_game_over(2000)
 
             pygame.display.flip()
-            dt = self._clock.tick(60)
+            self._clock.tick(60)
         return self._game_ended
 
 

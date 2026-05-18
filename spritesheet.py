@@ -7,5 +7,4 @@ class Spritesheet:
 
     def get_sprite(self, x, y, w, h):
         sprite = self.spritesheet.subsurface(pygame.Rect(x, y, w, h))
-        sprite = pygame.transform.scale(sprite, (40, 40))
         return sprite

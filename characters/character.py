@@ -31,6 +31,10 @@ class Character(pygame.sprite.Sprite, ABC):
             self.animation[direction] = [
                 self.spritesheet.get_sprite(*rect) for rect in coords
             ]
+            self.animation[direction] = [
+                pygame.transform.scale(sprite, self.SIZE)
+                for sprite in self.animation[direction]
+            ]
         image = self.animation[self.INITIAL_DIRECTION][0]
         return image, image.get_rect()
 
@@ -66,6 +70,18 @@ class Character(pygame.sprite.Sprite, ABC):
         if not (0 <= dy < len(self.maze) and 0 <= dx < len(self.maze[dy])):
             return False
         return not (self.maze[dy][dx] & direction.bit)
+
+    def _opposite_direction(self, direction: Directions) -> Directions:
+        if direction == Directions.UP:
+            return Directions.DOWN
+        elif direction == Directions.DOWN:
+            return Directions.UP
+        elif direction == Directions.LEFT:
+            return Directions.RIGHT
+        elif direction == Directions.RIGHT:
+            return Directions.LEFT
+        else:
+            return Directions.NONE
 
     @abstractmethod
     def update(self) -> None:
