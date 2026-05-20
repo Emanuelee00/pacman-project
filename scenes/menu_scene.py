@@ -9,6 +9,7 @@ from settings import (
 )
 from parser import GameConfig, load_highscores
 from .highscore_scene import highScoreScene
+from .instructions_scene import InstructionScene
 
 class MenuScene(Scene):
     def __init__(self, game):
@@ -60,10 +61,9 @@ class MenuScene(Scene):
             case 0:
                 PlayScene(self.game).enter_scene()
             case 1:
-                highScoreScene(self.game).enter_scene()
+                InstructionScene(self.game).enter_scene()
             case 2:
-                #InstructionsScene(self.game).enter_state()
-                pass
+                highScoreScene(self.game).enter_scene()
             case 3:
                 self.game.running = False
 
