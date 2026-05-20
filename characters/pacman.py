@@ -1,4 +1,5 @@
 import pygame
+from pathlib import Path
 
 from spritesheet import Spritesheet
 from .character import Character
@@ -13,20 +14,47 @@ from pygame import Surface
 class Pacman(Character):
     INITIAL_DIRECTION = Directions.RIGHT
     SPRITES = {
-        Directions.RIGHT: [(0, 54, 48, 48), (54, 54, 48, 48), (108, 54, 48, 48)],
-        Directions.LEFT: [(162, 54, 48, 48), (216, 54, 48, 48), (270, 54, 48, 48)],
+        Directions.RIGHT: [
+            (0, 54, 48, 48),
+            (54, 54, 48, 48),
+            (108, 54, 48, 48),
+        ],
+        Directions.LEFT: [
+            (162, 54, 48, 48),
+            (216, 54, 48, 48),
+            (270, 54, 48, 48),
+        ],
         Directions.UP: [(0, 0, 48, 48), (54, 0, 48, 48), (108, 0, 48, 48)],
-        Directions.DOWN: [(162, 0, 48, 48), (216, 0, 48, 48), (270, 0, 48, 48)],
+        Directions.DOWN: [
+            (162, 0, 48, 48),
+            (216, 0, 48, 48),
+            (270, 0, 48, 48),
+        ],
+        "dead": [
+            (0, 128, 48, 48),
+            (54, 128, 48, 48),
+            (108, 128, 48, 48),
+            (162, 128, 48, 48),
+            (216, 128, 48, 48),
+            (270, 128, 48, 48)],
     }
 
-    def __init__(self, maze: list[list[int]], spritesheet: Spritesheet):
+    def __init__(
+            self,
+            *groups: pygame.sprite.AbstractGroup,
+            maze: list[list[int]] | None = None,
+            spritesheet: Spritesheet | None = None,
+            ) -> None:
+        if maze is None or spritesheet is None:
+            raise TypeError("Pacman requires maze and spritesheet")
         self.animation: dict[Directions, list[Surface]] = {}
         self.spritesheet = spritesheet
-        super().__init__(maze, spritesheet)
+        super().__init__(maze, spritesheet, *groups)
 
         self._next_direction: Directions = Directions.NONE
         self._frame_slower = 0
         self.speed = SPEED
+        self.is_alive = True
 
     @property
     def direction(self):
@@ -64,7 +92,7 @@ class Pacman(Character):
         self.rect.x += self._direction.dx * self.speed
         self.rect.y += self._direction.dy * self.speed
 
-        if self._direction != Directions.NONE:
+        if self.is_alive and self._direction != Directions.NONE:
             current_center = self.rect.center
             frame = self.animation[self._direction]
             self.frame_slower += 0.2
@@ -72,6 +100,8 @@ class Pacman(Character):
                 self.frame_slower = 0
             self.image = frame[int(self.frame_slower)]
             self.rect = self.image.get_rect(center=current_center)
+        else:
+            self.image = self.animation["dead"][0]
 
     def respawn(self) -> None:
         # Center of the maze

@@ -1,8 +1,8 @@
-# from game import Game
+#from game import Game
 
 
 class Scene():
-    def __init__(self, game: Game):
+    def __init__(self, game):
         self.game = game
         self.prev_scene = None
 

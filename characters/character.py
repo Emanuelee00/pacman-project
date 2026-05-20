@@ -15,8 +15,13 @@ class Character(pygame.sprite.Sprite, ABC):
     SPRITES = {}
     INITIAL_DIRECTION = Directions.NONE
 
-    def __init__(self, maze: list[list[int]], spritesheet: Spritesheet):
-        super().__init__()
+    def __init__(
+            self,
+            maze: list[list[int]],
+            spritesheet: Spritesheet,
+            *groups: pygame.sprite.AbstractGroup
+            ) -> None:
+        super().__init__(*groups)
         self.maze: list[list[int]] = maze
         self.spritesheet = spritesheet
         self._direction: Directions = Directions.NONE

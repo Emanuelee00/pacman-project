@@ -1,6 +1,7 @@
 import pygame
 from pygame import event
 # from game import Game
+from play_scene import PlayScene
 from scene import Scene
 from settings import (
      SCREEN_WIDTH,
@@ -10,7 +11,7 @@ from parser import GameConfig, load_highscores
 
 
 class MenuScene(Scene):
-    def __init__(self, game: Game):
+    def __init__(self, game):
         super().__init__(game)
         self.mid_w, self.mid_h = self.game.screen.get_width() // 2, self.game.screen.get_height() // 2
         print(self.game.screen.get_width())
@@ -57,7 +58,7 @@ class MenuScene(Scene):
     def _select_option(self):
         match self.selected_option:
             case 0:
-                # PlayScene(self.game).enter_state()
+                PlayScene(self.game).enter_scene()
                 pass
             case 1:
                 # HighScoresScene(self.game).enter_state()

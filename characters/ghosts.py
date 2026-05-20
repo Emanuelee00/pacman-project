@@ -16,6 +16,8 @@ class Ghost(Character, ABC):
             pacman: Pacman,
             spritesheet: Spritesheet
             ):
+        if maze is None or spritesheet is None:
+            raise TypeError("The Ghost requires maze and spritesheet")
         self.spritesheet = spritesheet
         self.animation: dict[Directions, list[Surface]] = {}
         self.pacman: Pacman = pacman
