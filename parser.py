@@ -56,7 +56,7 @@ def load_config(path: str = "config.json") -> GameConfig:
     if not path.endswith(".json"):
         raise ValueError("File must in json format")
     if Path(path).is_dir():
-         raise ValueError("You can't insert a directory")
+        raise ValueError("You can't insert a directory")
     with open(path) as f:
         data = json.load(f)
     return GameConfig.model_validate(data)
