@@ -1,4 +1,4 @@
-from game import Game
+# from game import Game
 
 
 class Scene():
@@ -6,7 +6,7 @@ class Scene():
         self.game = game
         self.prev_scene = None
 
-    def update(self, actions):
+    def update(self):
         pass
 
     def render(self, surface):
