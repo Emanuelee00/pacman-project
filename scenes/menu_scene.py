@@ -1,9 +1,7 @@
 import pygame
 from pygame import event
 # from game import Game
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+from .play_scene import PlayScene
 from .scene import Scene
 from settings import (
      SCREEN_WIDTH,
@@ -11,7 +9,6 @@ from settings import (
 )
 from parser import GameConfig, load_highscores
 from .highscore_scene import highScoreScene
-from .play_scene import PlayScene
 
 class MenuScene(Scene):
     def __init__(self, game):

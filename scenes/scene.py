@@ -1,3 +1,6 @@
+#from game import Game
+
+
 class Scene():
     def __init__(self, game):
         self.game = game

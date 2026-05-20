@@ -3,42 +3,28 @@ import pygame
 from scenes.menu_scene import MenuScene
 from spritesheet import Spritesheet
 from settings import (
-    HEIGHT,
-    WIDTH,
-    WALL_SIZE,
-    CELL_SIZE,
-    OFFSET_X,
-    OFFSET_Y,
-    CHEAT_LIVES,
-    UNCHEAT,
     SCREEN_HEIGHT,
     SCREEN_WIDTH,
     FPS
 )
-from mazegenerator.mazegenerator import MazeGenerator
-from maze_drawing import to_tile_map, draw_maze
-from characters.ghosts import Inky, Blinky, Pinky, Clyde
-from characters.pacman import Pacman
-from pacgum import Pacgum, PacgumManager
-from parser import GameConfig, load_highscores
-from pygame import Surface
 
 
 class Game:
-    def __init__(self, config: GameConfig) -> None:
+    def __init__(self, config) -> None:
         pygame.init()
 
-        if config:
-            self._set_config(config)
-
+        self.current_dir = Path(__file__).parent
+        self._set_config(config)
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.running = True
         self.clock = pygame.time.Clock()
         self.scenes_stack = []
         self._load_scenes()
-        self._load_assets()
+        self.assets = self._load_assets()
+        self.score = 0
+        self.high_score = 0
         self.current_level = 0
-        self.current_dir = Path(__file__).parent
+        self._start_time = pygame.time.get_ticks()
         # self.lives = 1
         # self.points_per_pacgum = 10
         # self.points_per_super_pacgum = 50
@@ -88,11 +74,10 @@ class Game:
         # self._running = True
         # self._game_ended = False
         # self._clock = pygame.time.Clock()
-        # self._start_time = pygame.time.get_ticks()
         # self._cheat_time = None
         # self._game_over_time = None
 
-    def _set_config(self, config: GameConfig):
+    def _set_config(self, config):
         self.lives = config.lives
         self.points_per_pacgum = config.points_per_pacgum
         self.points_per_super_pacgum = config.points_per_super_pacgum
@@ -158,7 +143,14 @@ class Game:
         self.scenes_stack.append(self.menu_scene)
 
     def _load_assets(self):
-        pass
+        maze_tiles = Spritesheet(self.current_dir / "maze_tiles.png")
+        ghosts_sprites = Spritesheet(self.current_dir / "assets" / "ghosts_sprites.png")
+        pacman_sprites = Spritesheet(self.current_dir / "assets" / "pacman_sprites.png")
+        return {
+            "maze_tiles": maze_tiles,
+            "ghosts_sprites": ghosts_sprites,
+            "pacman_sprites": pacman_sprites
+        }
 
     def draw_text(self, surface, text, color, x, y):
         font = pygame.font.Font(self.current_dir / "assets" / "Pixel_Digivolve.otf", 30)
@@ -177,24 +169,15 @@ class Game:
                 if event.type == pygame.QUIT:
                     self.running = False
 
+            self.screen.fill((0, 0, 0))
             current_scene = self.scenes_stack[-1]
             current_scene.handle_events(events)
             current_scene.update()
-            self.screen.fill((0, 0, 0))
             current_scene.render(self.screen)
 
             pygame.display.flip()
             self.clock.tick(FPS)
-
         pygame.quit()
-                # if event.type == pygame.KEYDOWN:
-                #     self._key_buffer.append(event.key)
-                #     self._key_buffer = self._key_buffer[-max(len(CHEAT_LIVES), len(UNCHEAT)):]
-                #     if self._key_buffer[-len(CHEAT_LIVES):] == CHEAT_LIVES:
-                #         self._cheat_time = pygame.time.get_ticks()
-                #         self.pacman.set_cheated()
-                #     if self._key_buffer[-len(UNCHEAT):] == UNCHEAT:
-                #         self.pacman.set_normal()
 
 
         #     self.pacman.next_direction = pygame.key.get_pressed()

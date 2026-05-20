@@ -10,15 +10,11 @@ from scenes.scene import Scene
 class highScoreScene(Scene):
     def __init__(self, game) -> None:
         super().__init__(game)
-        self.top_5: dict = {}
+        self.top_5: list = []
 
     def _top_5(self):
         highscores = load_highscores(str(Path(__file__).parent.parent / "highscores.json"))
-        top5 = sorted(highscores.scores, key=lambda score: score.score, reverse=True)
-        for value in top5:
-            self.top_5[value.name] = value.score
-        print(top5)
-        return top5
+        self.top_5 = sorted(highscores.scores, key=lambda s: s.score, reverse=True)[:5]
     
     def handle_events(self, events):
         for e in events:
@@ -37,8 +33,7 @@ class highScoreScene(Scene):
         surface.fill((0, 0, 0))
         title = font.render("HIGH SCORES", True, Color.WHITE)
         surface.blit(title, (screen_w // 2 - title.get_width() // 2, screen_h // 4))
-        for i, (name, score) in enumerate(self.top_5.items()):
-            if i < 5:
-                text = font.render(f"{i + 1}. {name}  {score}", True, Color.YELLOW)
-                surface.blit(text, (screen_w // 2 - text.get_width() // 2, screen_h // 4 + 60 + i * 50))
+        for i, entry in enumerate(self.top_5):
+            text = font.render(f"{i + 1}. {entry.name}  {entry.score}", True, Color.YELLOW)
+            surface.blit(text, (screen_w // 2 - text.get_width() // 2, screen_h // 4 + 60 + i * 50))
 

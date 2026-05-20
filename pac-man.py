@@ -9,13 +9,13 @@ def main():
         sys.exit(1)
 
     try:
-        parsing_result = load_config(sys.argv[1])
+        config = load_config(sys.argv[1])
     except (ValueError, FileNotFoundError) as e:
         print(f"Error: {e}")
         sys.exit(1)
     else:
         print("Config loaded successfully.")
-        game = Game(parsing_result)
+        game = Game(config)
         game.run()
 
 
