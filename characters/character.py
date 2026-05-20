@@ -2,7 +2,6 @@ import pygame
 from pygame import Surface, Rect
 from settings import (
     Directions,
-    SPEED,
     WALL_SIZE,
     FLOOR_SIZE,
     CELL_SIZE,
@@ -16,14 +15,18 @@ class Character(pygame.sprite.Sprite, ABC):
     SPRITES = {}
     INITIAL_DIRECTION = Directions.NONE
 
-    def __init__(self, maze: list[list[int]], spritesheet: Spritesheet):
-        super().__init__()
+    def __init__(
+            self,
+            maze: list[list[int]],
+            spritesheet: Spritesheet,
+            *groups: pygame.sprite.AbstractGroup
+            ) -> None:
+        super().__init__(*groups)
         self.maze: list[list[int]] = maze
         self.spritesheet = spritesheet
         self._direction: Directions = Directions.NONE
         self.animation = {}
         self.image, self.rect = self._load_image()
-        self.speed = SPEED
         self.frame_slower = 0
 
     def _load_image(self) -> tuple[Surface, Rect]:
@@ -40,7 +43,7 @@ class Character(pygame.sprite.Sprite, ABC):
 
     @abstractmethod
     def respawn(self) -> None:
-        pass
+        ...
 
     def _current_cell(self) -> tuple[int, int]:
         cx = max(
@@ -85,4 +88,4 @@ class Character(pygame.sprite.Sprite, ABC):
 
     @abstractmethod
     def update(self) -> None:
-        pass
+        ...

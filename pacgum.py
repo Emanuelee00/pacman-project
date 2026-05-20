@@ -1,6 +1,7 @@
 import pygame
 from settings import CELL_SIZE, WALL_SIZE, FLOOR_SIZE, RADIUS, Color
 
+
 class Pacgum(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, radius=RADIUS, is_super=False) -> None:
         super().__init__()

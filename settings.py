@@ -38,9 +38,10 @@ class Directions(Enum):
 class Mode:
     """Enum for the ghosts behavior."""
 
-    CHASE = 0
-    SCATTER = 1
-    FRIGHTENED = 2
+    CHASE = "chase"
+    SCATTER = "scatter"
+    FRIGHTENED = "frightened"
+    EATEN = "eaten"
 
 
 # Maze settings
@@ -64,10 +65,8 @@ TILEMAP_HEIGHT = WALL_SIZE + (WALL_SIZE + FLOOR_SIZE) * HEIGHT
 # Screen settings
 OFFSET_X = 60
 OFFSET_Y = 60
-SCREEN_SIZE = (
-    TILEMAP_WIDTH + 2 * OFFSET_X,
-    TILEMAP_HEIGHT + 2 * OFFSET_Y
-    )
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 1280
 FPS = 60
 
 # Pacgum settings
