@@ -27,6 +27,7 @@ class Pacman(Character):
         self._next_direction: Directions = Directions.NONE
         self._frame_slower = 0
         self.speed = SPEED
+        self._cheated = False
 
     @property
     def direction(self):
@@ -91,7 +92,15 @@ class Pacman(Character):
                         )
                     self.rect.center = (pos_x + direc.dx, pos_y + direc.dy)
 
+    def shoot(self, missiles_group) -> None:
+        from .missile import Missile
+        if not self._cheated:
+            return
+        for direction in (Directions.UP, Directions.DOWN, Directions.LEFT, Directions.RIGHT):
+            missiles_group.add(Missile(self.rect.center, direction, self.maze))
+
     def set_normal(self):
+        self._cheated = False
         self.SIZE = Character.SIZE
         self.speed = SPEED
         self.animation = {
@@ -104,6 +113,7 @@ class Pacman(Character):
         self.rect = self.image.get_rect(center=self.rect.center)
 
     def set_cheated(self):
+        self._cheated = True
         self.SIZE = (100, 100)
         self.speed = 15
         self.animation = {

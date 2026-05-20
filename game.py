@@ -1,6 +1,6 @@
 from pathlib import Path
 import pygame
-from menu_scene import MenuScene
+from scenes.menu_scene import MenuScene
 from spritesheet import Spritesheet
 from settings import (
     HEIGHT,
@@ -25,7 +25,7 @@ from pygame import Surface
 
 
 class Game:
-    def __init__(self, config: GameConfig | None = None) -> None:
+    def __init__(self, config: GameConfig) -> None:
         pygame.init()
 
         if config:
@@ -140,7 +140,7 @@ class Game:
     #         self._cheat_time = None
 
     # def _display_game_over(self, milliseconds):
-    #     if self._game_over_time is None:
+    #     if self._game_over_time is None:  self.menu_scene = MenuScene(self)
     #         self._game_over_time = pygame.time.get_ticks()
     #     elapsed = pygame.time.get_ticks() - self._game_over_time
     #     if elapsed >= milliseconds:

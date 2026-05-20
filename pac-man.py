@@ -15,7 +15,8 @@ def main():
         sys.exit(1)
     else:
         print("Config loaded successfully.")
-        config = Game(parsing_result)
+        game = Game(parsing_result)
+        game.run()
 
 
 if __name__ == "__main__":
